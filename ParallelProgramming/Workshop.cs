@@ -2,7 +2,15 @@ namespace ParallelProgramming;
 
 public class Workshop
 {
-    public Workshop(IEnumerable<Machine> machines) => _machines = machines;
+    public Workshop(IEnumerable<Machine> machines, IEnumerable<Detail> details)
+    {
+        foreach (var machine in machines)
+            _machines.Add(machine.Name, machine);
+
+        _details = details;
+    }
     
-    private IEnumerable<Machine> _machines;
+    private IDictionary<string, Machine> _machines = new Dictionary<string, Machine>();
+
+    private IEnumerable<Detail> _details;
 }

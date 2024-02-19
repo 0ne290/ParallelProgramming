@@ -5,15 +5,17 @@ public class Machine
     public Machine(string name, int capacity)
     {
         Name = name;
-        Capacity = capacity;
+        _semaphore = new Semaphore(capacity, capacity);
     }
     
     public void ProcessADetail()
     {
-        
+        _semaphore.WaitOne();
+
+        _semaphore.Release();
     }
     
     public string Name { get; }
-    
-    public int Capacity { get; }
+
+    private Semaphore _semaphore;
 }
