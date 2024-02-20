@@ -15,19 +15,19 @@ internal static class Program
                 break;
         }
 
-        var timeSliceInMs = 0;// QT
-        while (timeSliceInMs < 1)
+        var timeSlice = 0;// QT
+        while (timeSlice < 1)
         {
             Console.Write("Введите продолжительность кванта времени в миллисекундах: ");
-            timeSliceInMs = Convert.ToInt32(Console.ReadLine());
+            timeSlice = Convert.ToInt32(Console.ReadLine());
         }
         
-        var maxTimeSliceInMs = 0;// MaxT
-        while (maxTimeSliceInMs < 1)
+        var maxCpuBurst = 0;// MaxT
+        while (maxCpuBurst < 1)
         {
-            Console.Write("Введите максимальную продолжительность кванта времени в миллисекундах для автоматической" +
+            Console.Write("Введите максимальное время работы потоков в квантах для автоматической" +
                           "случайной генерации: ");
-            maxTimeSliceInMs = Convert.ToInt32(Console.ReadLine());
+            maxCpuBurst = Convert.ToInt32(Console.ReadLine());
         }
         
         var maxPriority = 0;// MaxP
@@ -76,7 +76,8 @@ internal static class Program
 
         var details = new List<Detail>();// Потоки
         var detailNamesUsed = new List<string?> { null, string.Empty };
-        for (var i = 1; i <= amountResources; i++)
+        var emptyStringArray = new[] { string.Empty };
+        for (var i = 1; i <= amountThreads; i++)
         {
             var name = string.Empty;// Название
             while (detailNamesUsed.Contains(name))
@@ -89,21 +90,29 @@ internal static class Program
             var quantity = 0;// Кол-во потоков
             while (quantity < 1)
             {
-                Console.Write($"Станок {i}. Введите кол-во одновременно обрабатываемых деталей: ");
+                Console.Write($"Деталь {i}. Введите кол-во: ");
                 quantity = Convert.ToInt32(Console.ReadLine());
             }
-
-            var emptyStringArray =new[] { string.Empty };
+            
             var machineNames = emptyStringArray;// Названия ресурсов
             while (!machineNames.All(machineName => machineNamesUsed.Contains(machineName)))
             {
-                Console.Write($"Деталь {i}. Введите названия станков в формате: ");
+                Console.Write($"Деталь {i}. Введите названия станков: ");
                 machineNames = Console.ReadLine()?.Split(", ").Distinct().ToArray() ?? emptyStringArray;
             }
             
-            details.Add(new Detail(name!, quantity, machineNames));
+            var cpuBurst = 0;// Кол-во потоков
+            while (cpuBurst < 1)
+            {
+                Console.Write($"Деталь {i}. Введите время обработки в квантах: ");
+                cpuBurst = Convert.ToInt32(Console.ReadLine());
+            }
+            
+            details.Add(new Detail(name!, quantity, machineNames, cpuBurst));
         }
 
-        var workshop = new Workshop(machines, details);
+        var workshop = new Workshop(machines, details, timeSlice);
+        
+        workshop.StartProduction();
     }
 }
