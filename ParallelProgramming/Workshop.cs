@@ -17,19 +17,44 @@ public class Workshop
     {
         var tasks = new List<Task>();
         
-        var timer = new System.Timers.Timer(_timeSlice - 50);// Таймер иногда не успевает записать данные последнего потока, так что в качестве костыля (временно или нет - хз xD) я уменьшил ожидаемое время на 0.05 секунды
+        var timer = new System.Timers.Timer(_timeSlice);
         timer.Elapsed += OnTimedEvent;
         timer.Start();
         
         foreach (var detail in _details)
+        {
             foreach (var machineName in detail.MachineNames)
-                tasks.Add(Task.Run(() => _machines[machineName].Mill(_timeSlice * detail.CpuBurst, detail.Name)));
+            {
+                for (var i = 0; i < detail.Quantity * detail.CpuBurst; i++)
+                {
+                    var task = new Task(() =>
+                    {
+                        _machines[machineName].Mill(_timeSlice, detail.Name);
+                        _machines[machineName].DecrementFlow();
+                    });
+                    _machines[machineName].TaskQueue.Enqueue(task);
+                    tasks.Add(task);
+                }
+            }
+        }
+
+        foreach (var machine in _machines.Values)
+        {
+            while (machine.TaskQueue.Count > 0)
+            {
+                if (machine.IsAvailable())
+                {
+                    machine.IncrementFlow();
+                    machine.TaskQueue.Dequeue().Start();
+                }
+            }
+        }
         
         Task.WaitAll(tasks.ToArray());
         
         timer.Stop();
 
-        while (_sync) { }
+        while (_sync) { }// Можно было бы заменить это на AutoResetEvent или добавить к спин-локу код, отдающий квант времени этого потока другому потоку (Thread.Curent.Join(100) или Thread.Sleep(0))
         
         timer.Elapsed -= OnTimedEvent;
         timer.Close();
