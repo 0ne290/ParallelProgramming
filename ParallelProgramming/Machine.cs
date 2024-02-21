@@ -30,7 +30,7 @@ public class Machine
 
     public bool IsAvailable() => _flow < _capacity;
 
-    public void IncrementFlow() => Interlocked.Increment(ref _flow);
+    public void IncrementFlow() => _flow++;
     
     public void DecrementFlow() => Interlocked.Decrement(ref _flow);
     

@@ -8,7 +8,7 @@ public class Workshop
     {
         _machines = machines.ToDictionary(machine => machine.Name);
 
-        _details = details;
+        _details = details.OrderBy(d => d.CpuBurst);
 
         _timeSlice = timeSlice;
     }
@@ -20,7 +20,9 @@ public class Workshop
         var timer = new System.Timers.Timer(_timeSlice);
         timer.Elapsed += OnTimedEvent;
         timer.Start();
-        
+
+        var dgb = new object();
+
         foreach (var detail in _details)
         {
             foreach (var machineName in detail.MachineNames)
@@ -29,6 +31,14 @@ public class Workshop
                 {
                     var task = new Task(() =>
                     {
+                        lock (dgb)
+                        {
+                            while (!_machines[machineName].IsAvailable())
+                            {
+
+                            }
+                            _machines[machineName].IncrementFlow();
+                        }
                         _machines[machineName].Mill(_timeSlice, detail.Name);
                         _machines[machineName].DecrementFlow();
                     });
@@ -38,16 +48,9 @@ public class Workshop
             }
         }
 
-        foreach (var machine in _machines.Values)
+        foreach (var task in tasks)
         {
-            while (machine.TaskQueue.Count > 0)
-            {
-                if (machine.IsAvailable())
-                {
-                    machine.IncrementFlow();
-                    machine.TaskQueue.Dequeue().Start();
-                }
-            }
+            task.Start();
         }
         
         Task.WaitAll(tasks.ToArray());
