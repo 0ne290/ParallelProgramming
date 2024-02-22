@@ -64,6 +64,8 @@ public class Detail
         var detail = new Detail(Machine.GetMachinesByName(machineNames), quantity, cpuBurst, timeSlice, name);
         ((List<Detail>)Details).Add(detail);
     }
+
+    public static void SortDetails => ((List<Detail>)Details).Sort((x, y) => { if (x.GetRestOfCpuBurst() < y.GetRestOfCpuBurst()) return -1; else if (x.GetRestOfCpuBurst() > y.GetRestOfCpuBurst()) return 1; else return 0; });
     
     public string Name { get; }
 
