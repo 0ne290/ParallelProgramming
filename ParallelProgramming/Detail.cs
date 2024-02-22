@@ -1,45 +1,101 @@
+using ParallelProgramming.Enums;
+
 namespace ParallelProgramming;
 
 public class Detail
 {
-    public Detail(Machine[] machines, string name, int quantity, int cpuBurst)
+    public Detail(Machine[] machines, int quantity, int cpuBurst, int timeSlice, string name)
     {
-        Machines = machines;
+        _machines = machines;
+        _quantity = quantity;
+        _cpuBurst = cpuBurst;
+        _timeSlice = timeSlice;
+        
         Name = name;
-        Quantity = quantity;
-        CpuBurst = cpuBurst;
+        
         State = ProcessingStates.Queued;
+
+        ((List<Detail>)Details).Add(this);
+        DetailsInQueue.Enqueue(this);
     }
 
-    public async Task Process()
+    public async Task Process()// Извиняюсь за такой свинокод - я побоялся использовать return'ы, т. к. не имею опыта с async-await
     {
-        State = ProcessingStates.InProgress;
-        
-        await Task.Run(() => Machines[_machineIndex].Mill(CpuBurst, Name));
-        
-        _machineIndex++;
-        State = ProcessingStates.Queued;
-        if (_machineIndex == Machines.Length)
+        await Task.Run(() =>
         {
-            if (Quantity < 2)
-                State = ProcessingStates.Completed;
+            State = ProcessingStates.Waiting;
+            TargetMachineName = _machines[_machineIndex].Name;
+            
+            _machines[_machineIndex].Semaphore.WaitOne();
+            
+            State = ProcessingStates.InProgress;
+            
+            _machines[_machineIndex].Mill(_timeSlice, Name);
+            _machines[_machineIndex].Semaphore.Release();
+        });
+
+        _cpuBurstCompleted++;
+        State = ProcessingStates.Queued;
+        TargetMachineName = string.Empty;
+        
+        if (GetRestOfCpuBurst() == 0)
+        {
+            _cpuBurstCompleted = 0;
+            _machineIndex++;
+            if (_machineIndex == _machines.Length)
+            {
+                if (_quantity < 2)
+                    State = ProcessingStates.Completed;
+                else
+                {
+                    _quantity--;
+                    _machineIndex = 0;
+                    lock (DetailBlocker)
+                    {
+                        DetailsInQueue.Enqueue(this);
+                    }
+                }
+            }
             else
             {
-                Quantity--;
-                _machineIndex = 0;
+                lock (DetailBlocker)
+                {
+                    DetailsInQueue.Enqueue(this);
+                }
+            }
+        }
+        else
+        {
+            lock (DetailBlocker)
+            {
+                DetailsInQueue.Enqueue(this);
             }
         }
     }
 
-    public Machine[] Machines { get; }
+    public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
     
     public string Name { get; }
-    
-    public int Quantity { get; private set; }
-    
-    public int CpuBurst { get; }
 
+    public string TargetMachineName { get; private set; } = string.Empty;
+    
     public ProcessingStates State { get; private set; }
 
+    public static Queue<Detail> DetailsInQueue { get; } = new();
+    
+    public static IEnumerable<Detail> Details { get; } = new List<Detail>();
+
+    private readonly Machine[] _machines;
+
+    private int _quantity;
+
+    private readonly int _cpuBurst;
+
+    private readonly int _timeSlice;
+
     private int _machineIndex;
+    
+    private int _cpuBurstCompleted;
+
+    private static readonly object DetailBlocker = new();
 }

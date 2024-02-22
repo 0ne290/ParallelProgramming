@@ -7,7 +7,10 @@ public class Machine
     public Machine(string name, int capacity)
     {
         Name = name;
-        _capacity = capacity;
+        
+        Semaphore = new Semaphore(capacity, capacity);
+        
+        ((List<Machine>)Machines).Add(this);
     }
     
     public void Mill(int milliseconds, string detailName)
@@ -27,14 +30,10 @@ public class Machine
             _detailNames.Remove(detailName);
         }
     }
-
-    public bool IsAvailable() => _flow < _capacity;
-
-    public void IncrementFlow() => _flow++;
-    
-    public void DecrementFlow() => Interlocked.Decrement(ref _flow);
     
     public string Name { get; }
+    
+    public Semaphore Semaphore { get; }
 
     public List<string> DetailNames
     {
@@ -46,14 +45,12 @@ public class Machine
             }
         }
     }
-    
-    public Queue<Task> TaskQueue { get; } = new Queue<Task>();
-    
-    private int _capacity;
-    
-    private int _flow;
 
-    private List<string> _detailNames = new();
+    public static Machine[] GetMachinesByName(string[] machineNames) => Machines.Where(m => machineNames.Contains(m.Name)).ToArray();
     
-    private object _nameBlocker = new();
+    public static IEnumerable<Machine> Machines { get; } = new List<Machine>();
+
+    private readonly List<string> _detailNames = new();
+    
+    private readonly object _nameBlocker = new();
 }

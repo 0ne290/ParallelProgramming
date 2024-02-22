@@ -2,5 +2,5 @@ namespace ParallelProgramming.Enums;
 
 public enum ProcessingStates
 {
-    Queued, InProgress, Completed
+    Queued, Waiting, InProgress, Completed
 }

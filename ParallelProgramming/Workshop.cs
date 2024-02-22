@@ -1,59 +1,25 @@
 using System.Timers;
+using ParallelProgramming.Enums;
 
 namespace ParallelProgramming;
 
 public class Workshop
 {
-    public Workshop(IEnumerable<Machine> machines, IEnumerable<Detail> details, int timeSlice)
-    {
-        _machines = machines.ToDictionary(machine => machine.Name);
-
-        _details = details.OrderBy(d => d.CpuBurst);
-
-        _timeSlice = timeSlice;
-    }
+    public Workshop(int timeSlice) => _timeSlice = timeSlice;
 
     public void StartProduction()
     {
-        var tasks = new List<Task>();
-        
         var timer = new System.Timers.Timer(_timeSlice);
         timer.Elapsed += OnTimedEvent;
         timer.Start();
 
-        var dgb = new object();
-
-        foreach (var detail in _details)
+        while (Detail.Details.Any(d => d.State != ProcessingStates.Completed))
         {
-            foreach (var machineName in detail.MachineNames)
-            {
-                for (var i = 0; i < detail.Quantity * detail.CpuBurst; i++)
-                {
-                    var task = new Task(() =>
-                    {
-                        lock (dgb)
-                        {
-                            while (!_machines[machineName].IsAvailable())
-                            {
-
-                            }
-                            _machines[machineName].IncrementFlow();
-                        }
-                        _machines[machineName].Mill(_timeSlice, detail.Name);
-                        _machines[machineName].DecrementFlow();
-                    });
-                    _machines[machineName].TaskQueue.Enqueue(task);
-                    tasks.Add(task);
-                }
-            }
+            if (Detail.DetailsInQueue.Count < 1)
+                continue;
+            var detail = Detail.DetailsInQueue.Dequeue();
+            detail.Process();
         }
-
-        foreach (var task in tasks)
-        {
-            task.Start();
-        }
-        
-        Task.WaitAll(tasks.ToArray());
         
         timer.Stop();
 
@@ -68,16 +34,16 @@ public class Workshop
     {
         _sync = true;
 
-        foreach (var machine in _machines.Values)
+        foreach (var machine in Machine.Machines)
             Console.WriteLine(
                 $"Станок {machine.Name}. Обрабатываемые детали: {string.Join(", ", machine.DetailNames)}");
+        
+        foreach (var detail in Detail.Details)
+            Console.WriteLine(
+                $"Деталь {detail.Name}. Состояние: {detail.State}. Станок: {detail.TargetMachineName}");
 
         _sync = false;
     }
-
-    private IReadOnlyDictionary<string, Machine> _machines;
-
-    private IEnumerable<Detail> _details;
 
     private int _timeSlice;
 
