@@ -22,7 +22,7 @@ public class Detail
         State = ProcessingStates.InProgress;
     }
 
-    public async Task<Detail> Process()// Извиняюсь за такой свинокод - я побоялся использовать return'ы, т. к. не имею опыта с async-await
+    public async Task<Detail> Process()
     {
         await _machines[_machineIndex].Mill(_timeSlice);
 
@@ -48,26 +48,8 @@ public class Detail
                 {
                     _quantity--;
                     _machineIndex = 0;
-                    //lock (DetailBlocker)
-                    //{
-                    //    DetailsInQueue.Enqueue(this);
-                    //}
                 }
             }
-            else
-            {
-                //lock (DetailBlocker)
-                //{
-                //    DetailsInQueue.Enqueue(this);
-                //}
-            }
-        }
-        else
-        {
-            //lock (DetailBlocker)
-            //{
-            //    DetailsInQueue.Enqueue(this);
-            //}
         }
         
         _machines[_machineIndex].Release(Name);
@@ -81,7 +63,6 @@ public class Detail
     {
         var detail = new Detail(Machine.GetMachinesByName(machineNames), quantity, cpuBurst, timeSlice, name);
         ((List<Detail>)Details).Add(detail);
-        DetailsInQueue.Enqueue(detail);
     }
     
     public string Name { get; }
@@ -89,8 +70,6 @@ public class Detail
     public string TargetMachineName => _machines[_machineIndex].Name;
 
     public ProcessingStates State { get; private set; }
-
-    public static Queue<Detail> DetailsInQueue { get; } = new();
     
     public static IEnumerable<Detail> Details { get; } = new List<Detail>();
 
@@ -105,6 +84,4 @@ public class Detail
     private int _machineIndex;
     
     private int _cpuBurstCompleted;
-
-    private static readonly object DetailBlocker = new();
 }
