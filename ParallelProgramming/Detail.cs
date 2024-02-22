@@ -4,7 +4,7 @@ namespace ParallelProgramming;
 
 public class Detail
 {
-    public Detail(Machine[] machines, int quantity, int cpuBurst, int timeSlice, string name)
+    private Detail(Machine[] machines, int quantity, int cpuBurst, int timeSlice, string name)
     {
         _machines = machines;
         _quantity = quantity;
@@ -14,9 +14,6 @@ public class Detail
         Name = name;
         
         State = ProcessingStates.Queued;
-
-        ((List<Detail>)Details).Add(this);
-        DetailsInQueue.Enqueue(this);
     }
 
     public async Task Process()// Извиняюсь за такой свинокод - я побоялся использовать return'ы, т. к. не имею опыта с async-await
@@ -74,6 +71,13 @@ public class Detail
     }
 
     public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
+
+    public static void CreateDetail(string[] machineNames, int quantity, int cpuBurst, int timeSlice, string name)
+    {
+        var detail = new Detail(Machine.GetMachinesByName(machineNames), quantity, cpuBurst, timeSlice, name);
+        ((List<Detail>)Details).Add(detail);
+        DetailsInQueue.Enqueue(detail);
+    }
     
     public string Name { get; }
 

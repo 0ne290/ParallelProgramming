@@ -4,13 +4,11 @@ namespace ParallelProgramming;
 
 public class Machine
 {
-    public Machine(string name, int capacity)
+    private Machine(string name, int capacity)
     {
         Name = name;
         
         Semaphore = new Semaphore(capacity, capacity);
-        
-        ((List<Machine>)Machines).Add(this);
     }
     
     public void Mill(int milliseconds, string detailName)
@@ -31,6 +29,14 @@ public class Machine
         }
     }
     
+    public static Machine[] GetMachinesByName(string[] machineNames) => Machines.Where(m => machineNames.Contains(m.Name)).ToArray();
+    
+    public static void CreateMachine(string name, int capacity)
+    {
+        var machine = new Machine(name, capacity);
+        ((List<Machine>)Machines).Add(machine);
+    }
+    
     public string Name { get; }
     
     public Semaphore Semaphore { get; }
@@ -45,8 +51,6 @@ public class Machine
             }
         }
     }
-
-    public static Machine[] GetMachinesByName(string[] machineNames) => Machines.Where(m => machineNames.Contains(m.Name)).ToArray();
     
     public static IEnumerable<Machine> Machines { get; } = new List<Machine>();
 

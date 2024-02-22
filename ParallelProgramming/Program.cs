@@ -6,7 +6,8 @@ internal static class Program
 {
     private static void Main()
     {
-        while (true)// PA
+        // PA
+        while (true)
         {
             Console.Write("Введите номер алгоритма планирования: ");
             if (!Enum.TryParse<PlanningAlgorithms>(Console.ReadLine() ?? string.Empty, out var planningAlgorithm))
@@ -14,15 +15,17 @@ internal static class Program
             if (Enum.IsDefined(planningAlgorithm))
                 break;
         }
-
-        var timeSlice = 0;// QT
+        
+        // QT
+        var timeSlice = 0;
         while (timeSlice < 1)
         {
             Console.Write("Введите продолжительность кванта времени в миллисекундах: ");
             timeSlice = Convert.ToInt32(Console.ReadLine());
         }
         
-        var maxCpuBurst = 0;// MaxT
+        // MaxT
+        var maxCpuBurst = 0;
         while (maxCpuBurst < 1)
         {
             Console.Write("Введите максимальное время работы потоков в квантах для автоматической" +
@@ -30,21 +33,23 @@ internal static class Program
             maxCpuBurst = Convert.ToInt32(Console.ReadLine());
         }
         
-        var maxPriority = 0;// MaxP
+        // MaxP
+        var maxPriority = 0;
         while (maxPriority < 1)
         {
             Console.Write("Введите максимальный приоритет потоков для автоматической случайной генерации: ");
             maxPriority = Convert.ToInt32(Console.ReadLine());
         }
         
-        var amountResources = 0;// NR
+        // NR
+        var amountResources = 0;
         while (amountResources < 1)
         {
             Console.Write("Введите кол-во ресурсов: ");
             amountResources = Convert.ToInt32(Console.ReadLine());
         }
 
-        var machines = new List<Machine>();// Ресурсы
+        // Ресурсы
         var machineNamesUsed = new List<string?> { null, string.Empty };
         for (var i = 1; i <= amountResources; i++)
         {
@@ -63,18 +68,19 @@ internal static class Program
                 capacity = Convert.ToInt32(Console.ReadLine());
             }
             
-            machines.Add(new Machine(name!, capacity));
+            Machine.CreateMachine(name!, capacity);
         }
         machineNamesUsed.RemoveRange(0, 2);
         
-        var amountThreads = 0;// NP
+        // NP
+        var amountThreads = 0;
         while (amountThreads < 1)
         {
             Console.Write("Введите кол-во деталей: ");
             amountThreads = Convert.ToInt32(Console.ReadLine());
         }
-
-        var details = new List<Detail>();// Потоки
+        
+        // Потоки
         var detailNamesUsed = new List<string?> { null, string.Empty };
         var emptyStringArray = new[] { string.Empty };
         for (var i = 1; i <= amountThreads; i++)
@@ -107,11 +113,11 @@ internal static class Program
                 Console.Write($"Деталь {i}. Введите время обработки в квантах: ");
                 cpuBurst = Convert.ToInt32(Console.ReadLine());
             }
-            
-            details.Add(new Detail(name!, quantity, machineNames, cpuBurst));
+
+            Detail.CreateDetail(machineNames, quantity, cpuBurst, timeSlice, name!);
         }
 
-        var workshop = new Workshop(machines, details, timeSlice);
+        var workshop = new Workshop(timeSlice);
         
         workshop.StartProduction();
     }
