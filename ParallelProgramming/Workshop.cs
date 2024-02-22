@@ -1,4 +1,4 @@
-using System.Timers;
+using System.Diagnostics;
 using ParallelProgramming.Enums;
 
 namespace ParallelProgramming;
@@ -23,60 +23,46 @@ public class Workshop
     */
     public void StartProduction()
     {
-        var timer = new System.Timers.Timer(_timeSlice);
-        timer.Elapsed += OnTimedEvent;
-        timer.Start();
-
-        while (Detail.Details.Any(d => d.State != ProcessingStates.Completed))
-        {
-            if (Detail.DetailsInQueue.Count < 1)
-                continue;
-            var detail = Detail.DetailsInQueue.Dequeue();
-            detail.Process();
-        }
+        var stopwatch = new Stopwatch();
         
         while (Detail.Details.Any(d => d.State != ProcessingStates.Completed))
         {
-            
-            stopWatch.Restart();
-            while (stopWatch.ElapsedMilliseconds < _timeSlice) { }
-            Log();
-        }
-        
-        timer.Stop();
-
-        while (_sync) { }// Можно было бы заменить это на AutoResetEvent или добавить к спин-локу код, отдающий квант времени этого потока другому потоку (Thread.Curent.Join(100) или Thread.Sleep(0))
-        
-        timer.Elapsed -= OnTimedEvent;
-        timer.Close();
-        timer.Dispose();
-    }
-    
-    private void OnTimedEvent(object? source, ElapsedEventArgs e)
-    {
-        lock (_ss)
-        {
-            _sync = true;
-
-            foreach (var machine in Machine.Machines)
-                Console.WriteLine(
-                    $"Станок {machine.Name}. Обрабатываемые детали: {string.Join(", ", machine.DetailNames)}");
-
-            Console.WriteLine();
-
+            var tasks = new List<Task<Detail>>();
             foreach (var detail in Detail.Details)
-                Console.WriteLine(
-                    $"Деталь {detail.Name}. Состояние: {detail.State}. Станок: {detail.TargetMachineName}");
-
-            Console.WriteLine();
-
-            _sync = false;
+            {
+                if (detail.IsAvailabe() && detail.State == ProcessingStates.Queued)
+                {
+                    detail.Preprocess();
+                    tasks.Add(detail.Process());
+                }
+            }
+            
+            stopwatch.Restart();
+            while (stopwatch.ElapsedMilliseconds < _timeSlice) { }
+            foreach (var task in tasks)
+            {
+                var detail = task.Result;
+                detail.Postprocess();
+            }
+            Log();
+            
         }
     }
 
-    private int _timeSlice;
+    private void Log()
+    {
+        foreach (var machine in Machine.Machines)
+            Console.WriteLine(
+                $"Станок {machine.Name}. Обрабатываемые детали: {string.Join(", ", machine.DetailNames)}");
 
-    private bool _sync;
+        Console.WriteLine();
 
-    private object _ss = new();
+        foreach (var detail in Detail.Details)
+            Console.WriteLine(
+                $"Деталь {detail.Name}. Состояние: {detail.State}. Станок: {detail.TargetMachineName}");
+
+        Console.WriteLine();
+    }
+
+    private readonly int _timeSlice;
 }

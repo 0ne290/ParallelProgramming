@@ -7,26 +7,35 @@ public class Machine
     private Machine(string name, int capacity)
     {
         Name = name;
-        
-        Semaphore = new Semaphore(capacity, capacity);
+
+        _capacity = capacity;
     }
     
-    public void Mill(int milliseconds, string detailName)
+    public async Task Mill(int milliseconds)
     {
         var stopWatch = new Stopwatch();
-        
-        lock (_nameBlocker)
+
+        await Task.Run(() =>
         {
-            _detailNames.Add(detailName);
-        }
-        
-        stopWatch.Start();
-        while (stopWatch.ElapsedMilliseconds < milliseconds) { }
-        
-        lock (_nameBlocker)
-        {
-            _detailNames.Remove(detailName);
-        }
+            stopWatch.Start();
+            while (stopWatch.ElapsedMilliseconds < milliseconds)
+            {
+            }
+        });
+    }
+
+    public bool IsAvailable() => _flow < _capacity;
+
+    public void Hold(string detailName)
+    {
+        _flow++;
+        _detailNames.Add(detailName);
+    }
+    
+    public void Release(string detailName)
+    {
+        _flow--;
+        _detailNames.Remove(detailName);
     }
     
     public static Machine[] GetMachinesByName(string[] machineNames) => Machines.Where(m => machineNames.Contains(m.Name)).ToArray();
@@ -38,8 +47,6 @@ public class Machine
     }
     
     public string Name { get; }
-    
-    public Semaphore Semaphore { get; }
 
     public List<string> DetailNames
     {
@@ -55,6 +62,10 @@ public class Machine
     public static IEnumerable<Machine> Machines { get; } = new List<Machine>();
 
     private readonly List<string> _detailNames = new();
+
+    private readonly int _capacity;
+    
+    private int _flow;
     
     private readonly object _nameBlocker = new();
 }

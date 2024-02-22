@@ -16,25 +16,23 @@ public class Detail
         State = ProcessingStates.Queued;
     }
 
-    public async Task Process()// Извиняюсь за такой свинокод - я побоялся использовать return'ы, т. к. не имею опыта с async-await
+    public void Preprocess()
     {
-        await Task.Run(() =>
-        {
-            State = ProcessingStates.Waiting;
-            TargetMachineName = _machines[_machineIndex].Name;
-            
-            _machines[_machineIndex].Semaphore.WaitOne();
-            
-            State = ProcessingStates.InProgress;
-            
-            _machines[_machineIndex].Mill(_timeSlice, Name);
-            _machines[_machineIndex].Semaphore.Release();
-        });
+        _machines[_machineIndex].Hold(Name);
+        State = ProcessingStates.InProgress;
+    }
 
+    public async Task<Detail> Process()// Извиняюсь за такой свинокод - я побоялся использовать return'ы, т. к. не имею опыта с async-await
+    {
+        await _machines[_machineIndex].Mill(_timeSlice);
+
+        return this;
+    }
+    
+    public void Postprocess()
+    {
         _cpuBurstCompleted++;
         State = ProcessingStates.Queued;
-        TargetMachineName = string.Empty;
-        
         if (GetRestOfCpuBurst() == 0)
         {
             _cpuBurstCompleted = 0;
@@ -42,33 +40,40 @@ public class Detail
             if (_machineIndex == _machines.Length)
             {
                 if (_quantity < 2)
+                {
+                    _machineIndex--;
                     State = ProcessingStates.Completed;
+                }
                 else
                 {
                     _quantity--;
                     _machineIndex = 0;
-                    lock (DetailBlocker)
-                    {
-                        DetailsInQueue.Enqueue(this);
-                    }
+                    //lock (DetailBlocker)
+                    //{
+                    //    DetailsInQueue.Enqueue(this);
+                    //}
                 }
             }
             else
             {
-                lock (DetailBlocker)
-                {
-                    DetailsInQueue.Enqueue(this);
-                }
+                //lock (DetailBlocker)
+                //{
+                //    DetailsInQueue.Enqueue(this);
+                //}
             }
         }
         else
         {
-            lock (DetailBlocker)
-            {
-                DetailsInQueue.Enqueue(this);
-            }
+            //lock (DetailBlocker)
+            //{
+            //    DetailsInQueue.Enqueue(this);
+            //}
         }
+        
+        _machines[_machineIndex].Release(Name);
     }
+
+    public bool IsAvailabe() => _machines[_machineIndex].IsAvailable();
 
     public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
 
@@ -81,8 +86,8 @@ public class Detail
     
     public string Name { get; }
 
-    public string TargetMachineName { get; private set; } = string.Empty;
-    
+    public string TargetMachineName => _machines[_machineIndex].Name;
+
     public ProcessingStates State { get; private set; }
 
     public static Queue<Detail> DetailsInQueue { get; } = new();
