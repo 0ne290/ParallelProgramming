@@ -9,6 +9,7 @@ public class Workshop
     
     public void StartProduction()
     {
+        Detail.SortDetails();
         var stopwatch = new Stopwatch();
         var logTask = Task.CompletedTask;
         
@@ -35,6 +36,8 @@ public class Workshop
                 var detail = task.Result;
                 detail.Postprocess();
             }
+
+            Detail.SortDetails();
         }
     }
 
