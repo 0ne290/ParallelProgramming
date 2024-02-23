@@ -1,4 +1,5 @@
-﻿using ParallelProgramming.Enums;
+﻿using System.Diagnostics;
+using ParallelProgramming.Enums;
 
 namespace ParallelProgramming;
 
@@ -6,11 +7,20 @@ internal static class Program
 {
     private static void Main()
     {
+        Console.WriteLine
+        ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +
+         "выводиться в файл \"Output.txt\". Формат входных данных:\nНомер алгоритма планирования - [0;1], 0 - " +
+         "SjfNonpreemptive, 1 - SjfPreemptiveAbsolutePriority;\nЕсли для детали ввести время обработки 0, то будет " +
+         "сгенерировано случайное значение;\nДля всех остальных численных переменных значение должно быть больше " +
+         "нуля;\nОграничений на значения текстовых переменных названий нет;\nНазвания станков для деталей " +
+         "записываются через запятую.\n");
+        
         // PA
+        PlanningAlgorithms planningAlgorithm;
         while (true)
         {
             Console.Write("Введите номер алгоритма планирования: ");
-            if (!Enum.TryParse<PlanningAlgorithms>(Console.ReadLine() ?? string.Empty, out var planningAlgorithm))
+            if (!Enum.TryParse(Console.ReadLine() ?? string.Empty, out planningAlgorithm))
                 continue;
             if (Enum.IsDefined(planningAlgorithm))
                 break;
@@ -28,18 +38,18 @@ internal static class Program
         var maxCpuBurst = 0;
         while (maxCpuBurst < 1)
         {
-            Console.Write("Введите максимальное время работы потоков в квантах для автоматической" +
+            Console.Write("Введите максимальное время работы потоков в квантах для автоматической " +
                           "случайной генерации: ");
             maxCpuBurst = Convert.ToInt32(Console.ReadLine());
         }
         
-        // MaxP
-        var maxPriority = 0;
-        while (maxPriority < 1)
-        {
-            Console.Write("Введите максимальный приоритет потоков для автоматической случайной генерации: ");
-            maxPriority = Convert.ToInt32(Console.ReadLine());
-        }
+        //// MaxP
+        //var maxPriority = 0;
+        //while (maxPriority < 1)
+        //{
+        //    Console.Write("Введите максимальный приоритет потоков для автоматической случайной генерации: ");
+        //    maxPriority = Convert.ToInt32(Console.ReadLine());
+        //}
         
         // NR
         var amountResources = 0;
@@ -106,19 +116,36 @@ internal static class Program
                 Console.Write($"Деталь {i}. Введите названия станков: ");
                 machineNames = Console.ReadLine()?.Split(", ").Distinct().ToArray() ?? emptyStringArray;
             }
-            
-            var cpuBurst = 0;// Кол-во потоков
-            while (cpuBurst < 1)
+
+            Console.Write($"Деталь {i}. Введите время обработки в квантах: ");
+            var cpuBurst = Convert.ToInt32(Console.ReadLine()); // Время обработки
+            if (cpuBurst < 1)
             {
-                Console.Write($"Деталь {i}. Введите время обработки в квантах: ");
-                cpuBurst = Convert.ToInt32(Console.ReadLine());
+                var random = new Random();
+                cpuBurst = random.Next(1, maxCpuBurst + 1);
             }
 
-            Detail.CreateDetail(machineNames, quantity, cpuBurst, timeSlice, name!);
+            Detail.CreateDetail(machineNames, quantity, timeSlice, cpuBurst, name!);
         }
+        
+        Console.WriteLine();
+
+        DisplayEntities();
 
         var workshop = new Workshop(timeSlice);
         
-        workshop.StartProduction();
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+        workshop.StartProduction(planningAlgorithm);
+        Console.WriteLine($"\nВсе детали обработаны. Затраченное время - {stopwatch.ElapsedMilliseconds} мс.");
+    }
+
+    private static void DisplayEntities()
+    {
+        foreach (var machine in Machine.Machines)
+            Console.WriteLine(machine);
+
+        foreach (var detail in Detail.Details)
+           Console.WriteLine(detail);
     }
 }

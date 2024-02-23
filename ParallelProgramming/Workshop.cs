@@ -7,10 +7,25 @@ public class Workshop
 {
     public Workshop(int timeSlice) => _timeSlice = timeSlice;
     
-    public void StartProduction()
+    public void StartProduction(PlanningAlgorithms planningAlgorithm)
     {
+        if (planningAlgorithm == PlanningAlgorithms.SjfPreemptiveAbsolutePriority)
+            PreemptiveMultitasking();
+        else if (planningAlgorithm == PlanningAlgorithms.SjfNonpreemptive)
+            NonPreemptiveMultitasking();
+    }
+
+    private void PreemptiveMultitasking()
+    {
+        Comparison<Detail> comparator = (x, y) =>
+        {
+            if (x.GetRestOfCpuBurst() < y.GetRestOfCpuBurst())
+                return -1;
+        
+            return x.GetRestOfCpuBurst() > y.GetRestOfCpuBurst() ? 1 : 0;
+        };
         var details = new List<Detail>(Detail.Details);
-        Detail.SortDetails(details);
+        details.Sort(comparator);
         var stopwatch = new Stopwatch();
         var logTask = Task.CompletedTask;
         
@@ -32,13 +47,48 @@ public class Workshop
             logTask.Wait();
             logTask = Log();
             
-            foreach (var task in tasks)
-            {
-                var detail = task.Result;
+            foreach (var detail in Task.WhenAll(tasks).Result)
                 detail.Postprocess();
-            }
 
-            Detail.SortDetails(details);
+            details.Sort(comparator);
+        }
+        
+        _writer.Dispose();
+    }
+    
+    private void NonPreemptiveMultitasking()
+    {
+        var details = new List<Detail>(Detail.Details);
+        details.Sort((x, y) =>
+        {
+            if (x.CpuBurst < y.CpuBurst)
+                return -1;
+
+            return x.CpuBurst > y.CpuBurst ? 1 : 0;
+        });
+        var stopwatch = new Stopwatch();
+        var logTask = Task.CompletedTask;
+        
+        while (details.Any(d => d.State != ProcessingStates.Completed))
+        {
+            var tasks = new List<Task<Detail>>();
+            foreach (var detail in details)
+            {
+                if (!detail.IsAvailabe() || detail.State != ProcessingStates.Queued)
+                    continue;
+                
+                detail.Preprocess();
+                tasks.Add(detail.Process());
+            }
+            
+            stopwatch.Restart();
+            while (stopwatch.ElapsedMilliseconds < _timeSlice) { }
+            
+            logTask.Wait();
+            logTask = Log();
+            
+            foreach (var detail in Task.WhenAll(tasks).Result)
+                detail.Postprocess();
         }
         
         _writer.Dispose();

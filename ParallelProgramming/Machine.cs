@@ -11,8 +11,8 @@ public class Machine
         _capacity = capacity;
     }
     
-    public async Task Mill(int milliseconds) => await Task.Run(() => 
-    { 
+    public async Task Mill(int milliseconds) => await Task.Run(() =>
+    {
         var stopWatch = new Stopwatch(); 
         stopWatch.Start(); 
         while (stopWatch.ElapsedMilliseconds < milliseconds) { } 
@@ -39,6 +39,8 @@ public class Machine
         var machine = new Machine(name, capacity);
         ((List<Machine>)Machines).Add(machine);
     }
+    
+    public override string ToString() => $"Станок {Name}; пропускная способность = {_capacity};";
     
     public string Name { get; }
 

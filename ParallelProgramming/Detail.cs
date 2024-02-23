@@ -4,13 +4,13 @@ namespace ParallelProgramming;
 
 public class Detail
 {
-    private Detail(Machine[] machines, int quantity, int cpuBurst, int timeSlice, string name)
+    private Detail(Machine[] machines, int quantity, int timeSlice, int cpuBurst, string name)
     {
         _machines = machines;
         _quantity = quantity;
-        _cpuBurst = cpuBurst;
         _timeSlice = timeSlice;
-        
+
+        CpuBurst = cpuBurst;
         Name = name;
         
         State = ProcessingStates.Queued;
@@ -31,47 +31,46 @@ public class Detail
     
     public void Postprocess()
     {
+        _machines[_machineIndex].Release(Name);
         _cpuBurstCompleted++;
         State = ProcessingStates.Queued;
-        if (GetRestOfCpuBurst() == 0)
-        {
-            _cpuBurstCompleted = 0;
-            _machineIndex++;
-            if (_machineIndex == _machines.Length)
-            {
-                if (_quantity < 2)
-                {
-                    _machineIndex--;
-                    State = ProcessingStates.Completed;
-                }
-                else
-                {
-                    _quantity--;
-                    _machineIndex = 0;
-                }
-            }
-        }
         
-        _machines[_machineIndex].Release(Name);
+        if (GetRestOfCpuBurst() != 0)
+            return;
+        
+        _cpuBurstCompleted = 0;
+        _machineIndex++;
+        
+        if (_machineIndex != _machines.Length)
+            return;
+        
+        if (_quantity < 2)
+        {
+            _machineIndex--;
+            State = ProcessingStates.Completed;
+        }
+        else
+        {
+            _quantity--;
+            _machineIndex = 0;
+        }
     }
 
     public bool IsAvailabe() => _machines[_machineIndex].IsAvailable();
 
-    public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
+    public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
 
-    public static void CreateDetail(string[] machineNames, int quantity, int cpuBurst, int timeSlice, string name)
+    public static void CreateDetail(string[] machineNames, int quantity, int timeSlice, int cpuBurst, string name)
     {
-        var detail = new Detail(Machine.GetMachinesByName(machineNames), quantity, cpuBurst, timeSlice, name);
+        var detail = new Detail(Machine.GetMachinesByName(machineNames), quantity, timeSlice, cpuBurst, name);
         ((List<Detail>)Details).Add(detail);
     }
 
-    public static void SortDetails(List<Detail> details) => details.Sort((x, y) =>
-    {
-        if (x.GetRestOfCpuBurst() < y.GetRestOfCpuBurst())
-            return -1;
-        
-        return x.GetRestOfCpuBurst() > y.GetRestOfCpuBurst() ? 1 : 0;
-    });
+    public override string ToString() =>
+        $"Деталь {Name}; время обработки = {CpuBurst}; кол-во = {_quantity}; обработать на станках " +
+        $"{string.Join(", ", _machines.Select(machine => machine.Name))};";
+    
+    public int CpuBurst { get; }
     
     public string Name { get; }
 
@@ -84,8 +83,6 @@ public class Detail
     private readonly Machine[] _machines;
 
     private int _quantity;
-
-    private readonly int _cpuBurst;
 
     private readonly int _timeSlice;
 
