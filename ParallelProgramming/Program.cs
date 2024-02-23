@@ -137,7 +137,10 @@ internal static class Program
         var stopwatch = new Stopwatch();
         stopwatch.Start();
         workshop.StartProduction(planningAlgorithm);
-        Console.WriteLine($"\nВсе детали обработаны. Затраченное время - {stopwatch.ElapsedMilliseconds} мс.");
+        Console.Write(
+            $"\nВсе детали обработаны. Затраченное время - {stopwatch.ElapsedMilliseconds} мс.\n\nНажмите любую " +
+            $"клавишу для завершения программы... ");
+        Console.ReadKey();
     }
 
     private static void DisplayEntities()
