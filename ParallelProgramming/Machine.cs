@@ -32,7 +32,15 @@ public class Machine
         DetailNames.Remove(detailName);
     }
     
-    public static Machine[] GetMachinesByName(string[] machineNames) => Machines.Where(m => machineNames.Contains(m.Name)).ToArray();
+    public static Machine[] GetMachinesByName(string[] machineNames)
+    {
+        var result = new Machine[machineNames.Length];
+        
+        for (var i = 0; i < machineNames.Length; i++)
+            result[i] = Machines.First(m => m.Name == machineNames[i]);
+
+        return result;
+    }
     
     public static void CreateMachine(string name, int capacity)
     {
