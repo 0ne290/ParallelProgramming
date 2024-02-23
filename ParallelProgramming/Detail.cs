@@ -65,7 +65,13 @@ public class Detail
         ((List<Detail>)Details).Add(detail);
     }
 
-    public static void SortDetails => ((List<Detail>)Details).Sort((x, y) => { if (x.GetRestOfCpuBurst() < y.GetRestOfCpuBurst()) return -1; else if (x.GetRestOfCpuBurst() > y.GetRestOfCpuBurst()) return 1; else return 0; });
+    public static void SortDetails(List<Detail> details) => details.Sort((x, y) =>
+    {
+        if (x.GetRestOfCpuBurst() < y.GetRestOfCpuBurst())
+            return -1;
+        
+        return x.GetRestOfCpuBurst() > y.GetRestOfCpuBurst() ? 1 : 0;
+    });
     
     public string Name { get; }
 

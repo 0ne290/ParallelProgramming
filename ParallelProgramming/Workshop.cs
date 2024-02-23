@@ -9,14 +9,15 @@ public class Workshop
     
     public void StartProduction()
     {
-        Detail.SortDetails();
+        var details = new List<Detail>(Detail.Details);
+        Detail.SortDetails(details);
         var stopwatch = new Stopwatch();
         var logTask = Task.CompletedTask;
         
-        while (Detail.Details.Any(d => d.State != ProcessingStates.Completed))
+        while (details.Any(d => d.State != ProcessingStates.Completed))
         {
             var tasks = new List<Task<Detail>>();
-            foreach (var detail in Detail.Details)
+            foreach (var detail in details)
             {
                 if (!detail.IsAvailabe() || detail.State != ProcessingStates.Queued)
                     continue;
@@ -37,23 +38,28 @@ public class Workshop
                 detail.Postprocess();
             }
 
-            Detail.SortDetails();
+            Detail.SortDetails(details);
         }
+        
+        _writer.Dispose();
     }
 
-    private async Task Log() => await Task.Run(() =>
+    private async Task Log()
     {
         foreach (var machine in Machine.Machines)
-            Console.WriteLine(
+            await _writer.WriteLineAsync(
                 $"Станок {machine.Name}. Обрабатываемые детали: {string.Join(", ", machine.DetailNames)}");
 
-        Console.WriteLine();
+        await _writer.WriteLineAsync();
 
         foreach (var detail in Detail.Details)
-            Console.WriteLine($"Деталь {detail.Name}. Состояние: {detail.State}. Станок: {detail.TargetMachineName}");
+            await _writer.WriteLineAsync(
+                $"Деталь {detail.Name}. Состояние: {detail.State}. Станок: {detail.TargetMachineName}");
 
-        Console.WriteLine();
-    });
+        await _writer.WriteLineAsync();
+    }
 
     private readonly int _timeSlice;
+
+    private readonly StreamWriter _writer = new("Output.txt", false);
 }
