@@ -56,7 +56,7 @@ public class Detail
         }
     }
 
-    public bool IsAvailabe() => _machines[_machineIndex].IsAvailable();
+    public bool IsAvailabe() => _machines[_machineIndex].IsAvailable() && State == ProcessingStates.Queued;
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
 

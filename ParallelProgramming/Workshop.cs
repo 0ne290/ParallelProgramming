@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using ParallelProgramming.Enums;
+using ArgumentOutOfRangeException = System.ArgumentOutOfRangeException;
 
 namespace ParallelProgramming;
 
@@ -9,10 +10,18 @@ public class Workshop
     
     public void StartProduction(PlanningAlgorithms planningAlgorithm)
     {
-        if (planningAlgorithm == PlanningAlgorithms.SjfPreemptiveAbsolutePriority)
-            PreemptiveMultitasking();
-        else if (planningAlgorithm == PlanningAlgorithms.SjfNonpreemptive)
-            NonPreemptiveMultitasking();
+        switch (planningAlgorithm)
+        {
+            case PlanningAlgorithms.SjfPreemptiveAbsolutePriority:
+                PreemptiveMultitasking();
+                break;
+            case PlanningAlgorithms.SjfNonpreemptive:
+                NonPreemptiveMultitasking();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(planningAlgorithm), planningAlgorithm,
+                    "Algorithm is not supported");
+        }
     }
 
     private void PreemptiveMultitasking()
@@ -32,11 +41,8 @@ public class Workshop
         while (details.Any(d => d.State != ProcessingStates.Completed))
         {
             var tasks = new List<Task<Detail>>();
-            foreach (var detail in details)
+            foreach (var detail in details.Where(detail => detail.IsAvailabe()))
             {
-                if (!detail.IsAvailabe() || detail.State != ProcessingStates.Queued)
-                    continue;
-                
                 detail.Preprocess();
                 tasks.Add(detail.Process());
             }
@@ -72,11 +78,8 @@ public class Workshop
         while (details.Any(d => d.State != ProcessingStates.Completed))
         {
             var tasks = new List<Task<Detail>>();
-            foreach (var detail in details)
+            foreach (var detail in details.Where(detail => detail.IsAvailabe()))
             {
-                if (!detail.IsAvailabe() || detail.State != ProcessingStates.Queued)
-                    continue;
-                
                 detail.Preprocess();
                 tasks.Add(detail.Process());
             }
