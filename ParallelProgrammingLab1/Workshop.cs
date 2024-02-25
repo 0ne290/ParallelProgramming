@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using ParallelProgramming.Enums;
+using ParallelProgrammingLab1.Enums;
 using ArgumentOutOfRangeException = System.ArgumentOutOfRangeException;
 
-namespace ParallelProgramming;
+namespace ParallelProgrammingLab1;
 
 public class Workshop
 {
