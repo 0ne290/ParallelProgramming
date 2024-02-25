@@ -1,4 +1,4 @@
-namespace ParallelProgramming.Enums;
+namespace ParallelProgrammingLab1.Enums;
 
 public enum ProcessingStates
 {
