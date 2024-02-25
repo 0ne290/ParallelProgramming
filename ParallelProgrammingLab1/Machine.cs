@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace ParallelProgramming;
+namespace ParallelProgrammingLab1;
 
 public class Machine
 {
