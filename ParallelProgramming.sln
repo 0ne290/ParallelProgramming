@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelProgramming", "ParallelProgramming\ParallelProgramming.csproj", "{50046F3E-C92C-4013-B063-AFB22B11485A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelProgrammingLab2", "ParallelProgramming\ParallelProgrammingLab2.csproj", "{50046F3E-C92C-4013-B063-AFB22B11485A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
