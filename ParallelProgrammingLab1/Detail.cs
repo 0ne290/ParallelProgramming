@@ -1,6 +1,6 @@
-using ParallelProgramming.Enums;
+using ParallelProgrammingLab1.Enums;
 
-namespace ParallelProgramming;
+namespace ParallelProgrammingLab1;
 
 public class Detail
 {
