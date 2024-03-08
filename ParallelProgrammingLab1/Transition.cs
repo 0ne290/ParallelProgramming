@@ -6,7 +6,16 @@ public class Transition
     
     public void AddOutputPlace(Place place) => _outputPlaces.Add(place);
     
-    public bool IsAvailabe() => _inputPlaces.All(p => p.Tokens > 0);
+    public bool IsAvailabe()
+    {
+        foreach (var place in _inputPlaces)
+        {
+            if (place.Tokens < 1)
+                return false;
+        }
+
+        return true;
+    }
 
     public void Execute()
     {
