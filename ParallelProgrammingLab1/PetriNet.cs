@@ -15,7 +15,7 @@ public class PetriNet
     {
         _threads.Sort((x, y) =>  x.CpuBurst.CompareTo(y.CpuBurst));
         
-        var timer = new System.Timers.Timer(_timeSlice);
+        var timer = new System.Timers.Timer(_timeSlice - 50);
         timer.Elapsed += OnTimedEvent;
         timer.Start();
         
@@ -72,7 +72,7 @@ public class PetriNet
     {
         Comparison<MyThread> comparator = (x, y) =>
         {
-            var ret = x.Priority.CompareTo(y.Priority);
+            var ret = y.Priority.CompareTo(x.Priority);
             return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
         };
         

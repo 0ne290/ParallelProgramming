@@ -26,7 +26,7 @@ internal static class Program
 
         var petriNet = new PetriNet(dict, new List<MyThread>() { thread1, thread3, thread4 }, 500);
         
-        petriNet.Execute1();
+        petriNet.Execute();
 
         /*Console.WriteLine
         ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +
