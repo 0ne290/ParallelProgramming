@@ -12,40 +12,52 @@ public class MyThread
         _cpuBurst = cpuBurst;
         _quantity = quantity;
         _resources = resources.ToArray();
-
-        _currentResource = _resources[0];
         
         Threads.Add(this);
     }
     
     public override string ToString() => $"{Name} state = {State};";
     
-    public void Execute(int timeslice)
+    public void Execute(int cpuBurst)
     {
-        _currentResource.Hold(this);
-		
-        _stopwatch.Restart();
-        while (_stopwatch.ElapsedMilliseconds < timeslice) { }
-		
-        _currentResource.Release(this);
-		
-        _cpuBurstCompleted++;
-        if (_cpuBurstCompleted != _cpuBurst)
-            return;
+        var waitTimeInMs = Resource.Timeslice * cpuBurst;
+        var currentResourceIndex = 0;
+        var currentResource = _resources[currentResourceIndex];
+        var stopwatch = new Stopwatch();
         
-        _currentResourceIndex++;
-        if (_currentResourceIndex == _resources.Length)
+        while (_quantity > 0)
         {
-            if (_quantity == 1)
+            State = ThreadStates.InQueue;
+            Locker = true;
+            currentResource.Hold(this);
+            while (Locker) { }
+            State = ThreadStates.Running;
+		
+            stopwatch.Restart();
+            while (stopwatch.ElapsedMilliseconds < waitTimeInMs) { }
+		
+            currentResource.Release(Name);
+		
+            _cpuBurstCompleted += cpuBurst;
+            if (_cpuBurstCompleted < _cpuBurst)
             {
-                State = ThreadStates.Completed;
-                return;
+                continue;
             }
-            _quantity--;
-            _currentResourceIndex = 0;
+        
+            currentResourceIndex++;
+            if (currentResourceIndex == _resources.Length)
+            {
+                if (_quantity < 2)
+                {
+                    State = ThreadStates.Completed;
+                    return;
+                }
+                _quantity--;
+                currentResourceIndex = 0;
+            }
+            currentResource = _resources[currentResourceIndex];
+            _cpuBurstCompleted = 0;
         }
-        _currentResource = _resources[_currentResourceIndex];
-        _cpuBurstCompleted = 0;
     }
 
     public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
@@ -55,6 +67,8 @@ public class MyThread
     public string Name { get; }
     
     public int Priority { get; }
+    
+    public bool Locker { get; set; }
 
     public static List<MyThread> Threads { get; } = new();
 
@@ -64,11 +78,5 @@ public class MyThread
 
     private int _quantity;
     
-    private int _cpuBurstCompleted; 
-
-    private Resource _currentResource;
-    
-    private int _currentResourceIndex;
-
-    private readonly Stopwatch _stopwatch = new();
+    private int _cpuBurstCompleted;
 }

@@ -1,32 +1,25 @@
-﻿namespace ParallelProgrammingLab1;
+﻿using ParallelProgrammingLab1.PetriNetSemaphore;
+
+namespace ParallelProgrammingLab1;
 
 internal static class Program
 {
     private static void Main()
     {
-        var res1 = new Resourse("R1", 2);
-        var res2 = new Resourse("R2", 2);
-        var resourses1 = new Resourse[] { res1, res2 };
-        //var resourses2 = new Resourse[] { res1, res2 };
-        
-        var thread1 = new MyThread("P1", 3, 2, 3);
-        //var thread2 = new MyThread("P2", 3, 1000);
-        var thread3 = new MyThread("P3", 3, 2, 2);
-        var thread4 = new MyThread("P4", 3, 2, 1);
-        
-        var petriSubnet1 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread1.CpuBurst, resourses1);
-        var petriSubnet2 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread3.CpuBurst, resourses1);
-        var petriSubnet3 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread4.CpuBurst, resourses1);
+        var resources = new[] { Resource.CreateResource("R1", 2), Resource.CreateResource("R2", 2) };
+        Resource.Timeslice = 500;
 
-        var dict = new Dictionary<MyThread, PetriSubnet>();
-        dict.Add(thread1, petriSubnet1);
-        //dict.Add(thread2, petriSubnet2);
-        dict.Add(thread3, petriSubnet2);
-        dict.Add(thread4, petriSubnet3);
+        var threads = new[]
+        {
+            new MyThread("P3", 1, 2, 3, resources), new MyThread("P2", 2, 2, 3, resources),
+            new MyThread("P1", 3, 2, 3, resources)
+        };
 
-        var petriNet = new PetriNet(dict, new List<MyThread>() { thread1, thread3, thread4 }, 500);
-        
-        petriNet.Execute1();
+        foreach (var thread in threads)
+        {
+            Task.Run(() => thread.Execute(2));
+        }
+        Resource.Execute();
 
         /*Console.WriteLine
         ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +
