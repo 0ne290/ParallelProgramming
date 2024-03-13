@@ -25,13 +25,16 @@ public class Resource
     public static void Execute()
     {
         var timer = new System.Timers.Timer(Timeslice);
-        timer.Elapsed += OnTimedEvent1;
+        //timer.Elapsed += OnTimedEvent1;
         timer.Elapsed += OnTimedEvent;
         timer.Start();
 
         var cond = true;
         while (cond)
         {
+            foreach (var resource in Resources)// Added
+                resource.Distribute();
+            
             foreach (var thread in MyThread.Threads)
             {
                 if (thread.State != ThreadStates.Completed)
@@ -44,7 +47,7 @@ public class Resource
 
         while (_sync > 0) { }// Можно было бы заменить это на AutoResetEvent или добавить к спин-локу код, отдающий квант времени этого потока другому потоку (Thread.Curent.Join(100) или Thread.Sleep(0))
         
-        timer.Elapsed -= OnTimedEvent1;
+        //timer.Elapsed -= OnTimedEvent1;
         timer.Elapsed -= OnTimedEvent;
         timer.Close();
         timer.Dispose();
