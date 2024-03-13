@@ -8,15 +8,15 @@ internal static class Program
         var res2 = new Resourse("R2", 2);
         var resourses1 = new Resourse[] { res1, res2 };
         //var resourses2 = new Resourse[] { res1, res2 };
-
-        var petriSubnet1 = PetriSubnet.CreatePetriSubnet(resourses1);
-        var petriSubnet2 = PetriSubnet.CreatePetriSubnet(resourses1);
-        var petriSubnet3 = PetriSubnet.CreatePetriSubnet(resourses1);
-
+        
         var thread1 = new MyThread("P1", 3, 2, 3);
         //var thread2 = new MyThread("P2", 3, 1000);
         var thread3 = new MyThread("P3", 3, 2, 2);
         var thread4 = new MyThread("P4", 3, 2, 1);
+        
+        var petriSubnet1 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread1.CpuBurst, resourses1);
+        var petriSubnet2 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread3.CpuBurst, resourses1);
+        var petriSubnet3 = PetriSubnet.CreatePetriSubnetForSjfPremptiveAbsolutePriority(thread4.CpuBurst, resourses1);
 
         var dict = new Dictionary<MyThread, PetriSubnet>();
         dict.Add(thread1, petriSubnet1);
@@ -26,7 +26,7 @@ internal static class Program
 
         var petriNet = new PetriNet(dict, new List<MyThread>() { thread1, thread3, thread4 }, 500);
         
-        petriNet.Execute();
+        petriNet.Execute1();
 
         /*Console.WriteLine
         ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +

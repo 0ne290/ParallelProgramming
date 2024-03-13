@@ -1,51 +1,74 @@
 using System.Diagnostics;
-using ThreadState = System.Diagnostics.ThreadState;
+using ParallelProgrammingLab1.PetriNetSemaphore;
 
 namespace ParallelProgrammingLab1;
 
 public class MyThread
 {
-    public MyThread(string name, int quantity, int cpuBurst, int priority)
+    public MyThread(string name, int priority, int cpuBurst, int quantity, IEnumerable<Resource> resources)
     {
         Name = name;
-        Quantity = quantity;
-        CpuBurst = cpuBurst;
         Priority = priority;
+        _cpuBurst = cpuBurst;
+        _quantity = quantity;
+        _resources = resources.ToArray();
+
+        _currentResource = _resources[0];
         
         Threads.Add(this);
     }
     
     public override string ToString() => $"{Name} state = {State};";
     
-    public void Execute(int cpuBurst)
+    public void Execute(int timeslice)
     {
-        Task.Run(() =>
+        _currentResource.Hold(this);
+		
+        _stopwatch.Restart();
+        while (_stopwatch.ElapsedMilliseconds < timeslice) { }
+		
+        _currentResource.Release(this);
+		
+        _cpuBurstCompleted++;
+        if (_cpuBurstCompleted != _cpuBurst)
+            return;
+        
+        _currentResourceIndex++;
+        if (_currentResourceIndex == _resources.Length)
         {
-            _stopwatch.Restart();
-
-            while (_stopwatch.ElapsedMilliseconds < cpuBurst)
+            if (_quantity == 1)
             {
+                State = ThreadStates.Completed;
+                return;
             }
-
-            State = ThreadStates.InQueue;
-        });
+            _quantity--;
+            _currentResourceIndex = 0;
+        }
+        _currentResource = _resources[_currentResourceIndex];
+        _cpuBurstCompleted = 0;
     }
-    
-    public int GetRestOfCpuBurst() => CpuBurst - CpuBurstCompleted;
 
-    public static List<MyThread> Threads { get; } = new();
-    
-    public string Name { get; set; }
-    
-    public int Quantity { get; set; }
-    
-    public int CpuBurst { get; set; }
-    
-    public int CpuBurstCompleted { get; set; }
-    
-    public int Priority { get; set; }
+    public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
 
     public ThreadStates State { get; set; } = ThreadStates.InQueue;
+    
+    public string Name { get; }
+    
+    public int Priority { get; }
+
+    public static List<MyThread> Threads { get; } = new();
+
+    private readonly Resource[] _resources;
+
+    private readonly int _cpuBurst;
+
+    private int _quantity;
+    
+    private int _cpuBurstCompleted; 
+
+    private Resource _currentResource;
+    
+    private int _currentResourceIndex;
 
     private readonly Stopwatch _stopwatch = new();
 }
