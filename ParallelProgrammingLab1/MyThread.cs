@@ -7,6 +7,9 @@ public class MyThread
 {
     public MyThread(string name, int priority, int cpuBurst, int quantity, IEnumerable<Resource> resources)
     {
+        if (Threads.Any(r => r.Name == name))
+            throw new Exception($"Поток с именем {name} уже существует.");
+        
         Name = name;
         Priority = priority;
         CpuBurst = cpuBurst;

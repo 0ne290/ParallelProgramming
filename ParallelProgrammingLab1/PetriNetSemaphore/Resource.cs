@@ -13,13 +13,26 @@ public class Resource
         Resources.Add(this);
     }
 
-    public static Resource CreateResource(string name, int capacity)
+    public static Resource CreateResource(ResourceConfiguration resourceConfiguration)
     {
+        if (Resources.Any(r => r._name == resourceConfiguration.Name))
+            throw new Exception($"Ресурс с именем {resourceConfiguration.Name} уже существует.");
+        
         var innerPlace = new Place();
-        var semaphorePlace = new Place { Tokens = capacity };
+        var semaphorePlace = new Place { Tokens = resourceConfiguration.Capacity };
 
-        return new Resource(name, new HoldingTransition(semaphorePlace, innerPlace),
+        return new Resource(resourceConfiguration.Name, new HoldingTransition(semaphorePlace, innerPlace),
             new ReleasingTransition(innerPlace, semaphorePlace));
+    }
+
+    public static Resource GetByName(string name)
+    {
+        var res = Resources.Find(r => r._name == name);
+        
+        if (res == null)
+            throw new Exception($"Ресурса с именем {name} не существует.");
+
+        return res;
     }
 
     public static void Execute()
@@ -49,8 +62,6 @@ public class Resource
         }
         
         timer.Stop();
-        
-        OutputFile.Dispose();
 
         while (_sync > 0) { }
         
@@ -67,7 +78,7 @@ public class Resource
 
         var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
 
-        OutputFile.WriteLine($"{_quantumNumber} | {resources} | {threads}");
+        OutputFile.WriteLine($"\t{_quantumNumber, -4} | {resources, -60} | {threads}");
 
         _quantumNumber++;
 
@@ -129,6 +140,8 @@ public class Resource
     public static int Timeslice { get; set; }
     
     public static bool Premptive { get; set; }
+    
+    public static StreamWriter OutputFile { get; set; }
 
     private readonly string _name;
     
@@ -145,8 +158,6 @@ public class Resource
     private static int _sync;
     
     private static int _quantumNumber;
-    
-    private static readonly StreamWriter OutputFile = new StreamWriter("test.txt", false);
 
     private static Comparison<MyThread> _comparator;
 }
