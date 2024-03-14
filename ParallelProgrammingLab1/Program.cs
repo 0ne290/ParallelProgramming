@@ -11,16 +11,31 @@ internal static class Program
         try
         {
             var inputData = JsonConvert.DeserializeObject<InputData>(File.ReadAllText("Input.json"));
+            var random = new Random();
 
             if (inputData == null)
                 throw new Exception(
                     "Невозможно прочитать данные из файла конфигурации. Вероятно, данные не соответствуют формату.");
 
+            if (inputData.Qt < 1)
+                inputData.Qt = random.Next(1, 1001);
+            if (inputData.MaxT < 1)
+                inputData.MaxT = random.Next(1, 11);
+            if (inputData.MaxP < 1)
+                inputData.MaxP = random.Next(1, inputData.Threads.Count + 1);
+
             Resource.OutputFile = new StreamWriter("Output.txt", false);
 
-            Resource.OutputFile.WriteLine("Ресурсы:");
+            Resource.OutputFile.WriteLine("Qt: {inputData.Qt}");
+            Resource.OutputFile.WriteLine("MaxT: {inputData.MaxT}");
+            Resource.OutputFile.WriteLine("MaxP: {inputData.MaxP}");
+
+            Resource.OutputFile.WriteLine("\nРесурсы:");
             foreach (var res in inputData.Resources)
             {
+                if (res.Capacity < 1)
+                    res.Capacity = random.Next(1, inputData.Threads.Count / 2 + 1);
+                    
                 Resource.CreateResource(res);
                 Resource.OutputFile.WriteLine($"\tНазвание: {res.Name}; пропускная способность: {res.Capacity}");
             }
@@ -33,6 +48,13 @@ internal static class Program
                 {
                     resources.Add(Resource.GetByName(resName));
                 }
+
+                if (thread.Priority < 1)
+                    thread.Priority = random.Next(1, inputData.MaxP + 1);
+                if (thread.CpuBurst < 1)
+                    thread.CpuBurst = random.Next(1, inputData.MaxT + 1);
+                if (thread.Quantity < 1)
+                    thread.Quantity = random.Next(1, 6);
 
                 _ = new MyThread(thread.Name, thread.Priority, thread.CpuBurst, thread.Quantity, resources);
                 Resource.OutputFile.WriteLine(
