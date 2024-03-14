@@ -1,4 +1,5 @@
-﻿using ParallelProgrammingLab1.PetriNetSemaphore;
+﻿using Newtonsoft.Json;
+using ParallelProgrammingLab1.PetriNetSemaphore;
 
 namespace ParallelProgrammingLab1;
 
@@ -6,7 +7,28 @@ internal static class Program
 {
     private static void Main()
     {
-        var res1 = Resource.CreateResource("R1", 2);
+        var inputData = JsonConvert.DeserializeObject<InputData>(File.ReadAllText("Input.json"));
+
+        if (inputData == null)
+            throw new Exception("Не получилось...");
+        
+        Console.WriteLine(inputData.Pa);
+        Console.WriteLine(inputData.Qt);
+        Console.WriteLine(inputData.MaxT);
+        Console.WriteLine(inputData.MaxP);
+
+        foreach (var res in inputData.Resources)
+        {
+            Console.WriteLine($"{res.Name} {res.Capacity}");
+        }
+        Console.WriteLine();
+        foreach (var thread in inputData.Threads)
+        {
+            Console.WriteLine($"{thread.Name} {thread.Priority} {thread.CpuBurst} {thread.Quantity} {string.Join(", ", thread.ResourceNames)}");
+        }
+        
+        
+        /*var res1 = Resource.CreateResource("R1", 2);
         var res2 = Resource.CreateResource("R2", 2);
         var resources = new[] { res1, res2 };
         var resources1 = new[] { res2, res1 };
@@ -25,7 +47,7 @@ internal static class Program
         {
             Task.Run(() => thread.Execute(true));
         }
-        Resource.Execute();
+        Resource.Execute();*/
 
         /*Console.WriteLine
         ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +
