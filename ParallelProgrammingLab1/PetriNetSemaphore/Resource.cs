@@ -15,13 +15,20 @@ public class Resource
 
     public static Resource CreateResource(ResourceConfiguration resourceConfiguration)
     {
-        if (Resources.Any(r => r._name == resourceConfiguration.Name))
-            throw new Exception($"Ресурс с именем {resourceConfiguration.Name} уже существует.");
+        var name = resourceConfiguration.Name;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = $"R{_resourceCounter}";
+            _resourceCounter++;
+        }
+        
+        if (Resources.Any(r => r._name == name))
+            throw new Exception($"Ресурс с именем {name} уже существует.");
         
         var innerPlace = new Place();
         var semaphorePlace = new Place { Tokens = resourceConfiguration.Capacity };
 
-        return new Resource(resourceConfiguration.Name, new HoldingTransition(semaphorePlace, innerPlace),
+        return new Resource(name, new HoldingTransition(semaphorePlace, innerPlace),
             new ReleasingTransition(innerPlace, semaphorePlace));
     }
 
@@ -160,4 +167,6 @@ public class Resource
     private static int _quantumNumber;
 
     private static Comparison<MyThread> _comparator;
+
+    private static int _resourceCounter = 1;
 }
