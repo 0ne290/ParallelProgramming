@@ -7,6 +7,11 @@ public class MyThread
 {
     public MyThread(string name, int priority, int cpuBurst, int quantity, IEnumerable<Resource> resources)
     {
+	if (string.IsNullOrWhiteSpace(name))
+	{
+	    Name = $"T{_threadCounter}";
+	    _threadCounter++;
+	}
         if (Threads.Any(r => r.Name == name))
             throw new Exception($"Поток с именем {name} уже существует.");
         
@@ -83,4 +88,6 @@ public class MyThread
     private int _quantity;
     
     private int _cpuBurstCompleted;
+
+    private static int _threadCounter = 1;
 }
