@@ -6,18 +6,24 @@ internal static class Program
 {
     private static void Main()
     {
-        var resources = new[] { Resource.CreateResource("R1", 2), Resource.CreateResource("R2", 2) };
+        var res1 = Resource.CreateResource("R1", 2);
+        var res2 = Resource.CreateResource("R2", 2);
+        var resources = new[] { res1, res2 };
+        var resources1 = new[] { res2, res1 };
         Resource.Timeslice = 500;
+        Resource.Premptive = true;
 
         var threads = new[]
         {
-            new MyThread("P3", 1, 2, 3, resources), new MyThread("P2", 2, 2, 3, resources),
-            new MyThread("P1", 3, 2, 3, resources)
+            new MyThread("P1", 1, 3, 4, resources), new MyThread("P2", 2, 1, 3, resources1),
+            new MyThread("P3", 3, 5, 2, resources), new MyThread("P4", 1, 3, 5, resources1),
+            new MyThread("P5", 2, 2, 2, resources),
+            new MyThread("P6", 3, 4, 1, resources1)
         };
 
         foreach (var thread in threads)
         {
-            Task.Run(() => thread.Execute(2));
+            Task.Run(() => thread.Execute(true));
         }
         Resource.Execute();
 

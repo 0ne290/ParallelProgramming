@@ -24,17 +24,22 @@ public class Resource
 
     public static void Execute()
     {
+        _comparator = Premptive
+            ? (x, y) =>
+            {
+                var ret = y.Priority.CompareTo(x.Priority);
+                return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
+            }
+            : (x, y) => x.CpuBurst.CompareTo(y.CpuBurst);
+        
         var timer = new System.Timers.Timer(Timeslice);
-        //timer.Elapsed += OnTimedEvent1;
+        timer.Elapsed += OnTimedEvent1;
         timer.Elapsed += OnTimedEvent;
         timer.Start();
 
         var cond = true;
         while (cond)
         {
-            foreach (var resource in Resources)// Added
-                resource.Distribute();
-            
             foreach (var thread in MyThread.Threads)
             {
                 if (thread.State != ThreadStates.Completed)
@@ -44,24 +49,25 @@ public class Resource
         }
         
         timer.Stop();
-
-        while (_sync > 0) { }// Можно было бы заменить это на AutoResetEvent или добавить к спин-локу код, отдающий квант времени этого потока другому потоку (Thread.Curent.Join(100) или Thread.Sleep(0))
         
-        //timer.Elapsed -= OnTimedEvent1;
+        OutputFile.Dispose();
+
+        while (_sync > 0) { }
+        
+        timer.Elapsed -= OnTimedEvent1;
         timer.Elapsed -= OnTimedEvent;
-        timer.Close();
         timer.Dispose();
     }
     
     private static void OnTimedEvent(object? source, ElapsedEventArgs e)
     {
         Interlocked.Increment(ref _sync);
-
+        
         var resources = Resources.Aggregate("", (current, resourse) => current + resourse);
 
         var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
 
-        Console.WriteLine($"{_quantumNumber} | {resources} | {threads}");
+        OutputFile.WriteLine($"{_quantumNumber} | {resources} | {threads}");
 
         _quantumNumber++;
 
@@ -88,15 +94,11 @@ public class Resource
         }
     }
 
-    public void Distribute()
+    private void Distribute()
     {
         lock (_locker)
         {
-            _waitingThreads.Sort((x, y) =>
-            {
-                var ret = y.Priority.CompareTo(x.Priority);
-                return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
-            });
+            _waitingThreads.Sort(_comparator);
             
             var capacity = GetCapacity();
             var i = 0;
@@ -104,7 +106,7 @@ public class Resource
             {
                 _holdingTransition.Execute();
                 _namesOfHoldingThreads.Add(_waitingThreads[0].Name);
-                _waitingThreads[0].Locker = false;
+                _waitingThreads[0].Locker.Set();
                 _waitingThreads.Remove(_waitingThreads[0]);
                 i++;
             }
@@ -120,11 +122,13 @@ public class Resource
         }
     }
 
-    public int GetCapacity() => _holdingTransition.GetCapacity();
-    
-    public static List<Resource> Resources { get; } = new();
+    private int GetCapacity() => _holdingTransition.GetCapacity();
+
+    private static List<Resource> Resources { get; } = new();
     
     public static int Timeslice { get; set; }
+    
+    public static bool Premptive { get; set; }
 
     private readonly string _name;
     
@@ -141,4 +145,8 @@ public class Resource
     private static int _sync;
     
     private static int _quantumNumber;
+    
+    private static readonly StreamWriter OutputFile = new StreamWriter("test.txt", false);
+
+    private static Comparison<MyThread> _comparator;
 }

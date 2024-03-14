@@ -9,7 +9,7 @@ public class MyThread
     {
         Name = name;
         Priority = priority;
-        _cpuBurst = cpuBurst;
+        CpuBurst = cpuBurst;
         _quantity = quantity;
         _resources = resources.ToArray();
         
@@ -18,19 +18,19 @@ public class MyThread
     
     public override string ToString() => $"{Name} state = {State};";
     
-    public void Execute(int cpuBurst)
+    public void Execute(bool premptive)
     {
+        var cpuBurst = premptive ? 1 : CpuBurst;
         var waitTimeInMs = Resource.Timeslice * cpuBurst;
         var currentResourceIndex = 0;
         var currentResource = _resources[currentResourceIndex];
         var stopwatch = new Stopwatch();
         
-        while (_quantity > 0)
+        while (true)
         {
             State = ThreadStates.InQueue;
-            Locker = true;
             currentResource.Hold(this);
-            while (Locker) { }
+            Locker.WaitOne();
             State = ThreadStates.Running;
 		
             stopwatch.Restart();
@@ -39,7 +39,7 @@ public class MyThread
             currentResource.Release(Name);
 		
             _cpuBurstCompleted += cpuBurst;
-            if (_cpuBurstCompleted < _cpuBurst)
+            if (_cpuBurstCompleted < CpuBurst)
             {
                 continue;
             }
@@ -50,6 +50,7 @@ public class MyThread
                 if (_quantity < 2)
                 {
                     State = ThreadStates.Completed;
+                    Locker.Dispose();
                     return;
                 }
                 _quantity--;
@@ -60,21 +61,21 @@ public class MyThread
         }
     }
 
-    public int GetRestOfCpuBurst() => _cpuBurst - _cpuBurstCompleted;
-
-    public ThreadStates State { get; set; } = ThreadStates.InQueue;
+    public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
+    
+    public ThreadStates State { get; private set; } = ThreadStates.InQueue;
     
     public string Name { get; }
     
     public int Priority { get; }
     
-    public bool Locker { get; set; }
+    public int CpuBurst { get; }
+
+    public AutoResetEvent Locker { get; } = new(false);
 
     public static List<MyThread> Threads { get; } = new();
 
     private readonly Resource[] _resources;
-
-    private readonly int _cpuBurst;
 
     private int _quantity;
     

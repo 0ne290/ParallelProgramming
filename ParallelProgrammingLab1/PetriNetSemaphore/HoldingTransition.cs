@@ -10,16 +10,13 @@ public class HoldingTransition
     
     public void Execute()
     {
-        if (GetCapacity() < 1)
-            throw new Exception("Bad...");
-        
         _innerPlace.Tokens++;
         _semaphorePlace.Tokens--;
     }
 
     public int GetCapacity() => _semaphorePlace.Tokens;
     
-    private Place _semaphorePlace;
+    private readonly Place _semaphorePlace;
     
-    private Place _innerPlace;
+    private readonly Place _innerPlace;
 }
