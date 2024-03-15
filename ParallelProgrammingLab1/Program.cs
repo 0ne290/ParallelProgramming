@@ -89,6 +89,8 @@ internal static class Program
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
+            Console.Write("\nНажмите любую клавишу для завершения программы...");
+            Console.ReadKey();
             return 1;
         }
     }
