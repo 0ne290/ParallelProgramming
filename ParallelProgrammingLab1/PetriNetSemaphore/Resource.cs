@@ -44,7 +44,7 @@ public class Resource
 
     public static void Execute()
     {
-        _comparator = Premptive
+        _comparator = Preemptive
             ? (x, y) =>
             {
                 var ret = y.Priority.CompareTo(x.Priority);
@@ -146,7 +146,7 @@ public class Resource
     
     public static int Timeslice { get; set; }
     
-    public static bool Premptive { get; set; }
+    public static bool Preemptive { get; set; }
     
     public static StreamWriter OutputFile { get; set; }
 

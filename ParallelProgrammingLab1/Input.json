@@ -1,0 +1,78 @@
+{
+	"Pa": true,
+	"Qt": 500,
+	"MaxT": 10,
+	"MaxP": 5,
+	"Resources": [
+		{
+			"Name": "R1",
+			"Capacity": 2
+		},
+		{
+			"Name": "R2",
+			"Capacity": 2
+		}
+	],
+	"Threads": [
+		{
+			"Name": "P1",
+			"Priority": 1,
+			"CpuBurst": 3,
+			"Quantity": 4,
+			"ResourceNames": [
+				"R1",
+				"R2"
+			]
+		},
+		{
+			"Name": "P2",
+			"Priority": 2,
+			"CpuBurst": 1,
+			"Quantity": 3,
+			"ResourceNames": [
+				"R2",
+				"R1"
+			]
+		},
+		{
+			"Name": "P3",
+			"Priority": 3,
+			"CpuBurst": 5,
+			"Quantity": 2,
+			"ResourceNames": [
+				"R1",
+				"R2"
+			]
+		},
+		{
+			"Name": "P4",
+			"Priority": 1,
+			"CpuBurst": 3,
+			"Quantity": 5,
+			"ResourceNames": [
+				"R2",
+				"R1"
+			]
+		},
+		{
+			"Name": "P5",
+			"Priority": 2,
+			"CpuBurst": 2,
+			"Quantity": 2,
+			"ResourceNames": [
+				"R1",
+				"R2"
+			]
+		},
+		{
+			"Name": "P6",
+			"Priority": 3,
+			"CpuBurst": 4,
+			"Quantity": 1,
+			"ResourceNames": [
+				"R2",
+				"R1"
+			]
+		}
+	]
+}
