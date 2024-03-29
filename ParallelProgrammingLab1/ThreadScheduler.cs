@@ -8,7 +8,11 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
     public ThreadScheduler(int timeslice, bool preemptive)
     {
         _timeslice = timeslice;
-        _threads = new List<MyThread>(MyThread.Threads);
+        
+        _threads = new List<(MyThread thread, Task task)>();
+        foreach (var thread in MyThread.Threads)
+            _threads.Add((thread, new Task(() => thread.Execute(_timeslice, preemptive ? 1 : thread.CpuBurst))));
+        
         _preemptive = preemptive;
     }
     
@@ -17,10 +21,10 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
         _comparator = _preemptive
             ? (x, y) =>
             {
-                var ret = y.Priority.CompareTo(x.Priority);
-                return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
+                var ret = y.Thread.Priority.CompareTo(x.Thread.Priority);
+                return ret != 0 ? ret : x.Thread.GetRestOfCpuBurst().CompareTo(y.Thread.GetRestOfCpuBurst());
             }
-            : (x, y) => x.CpuBurst.CompareTo(y.CpuBurst);
+            : (x, y) => x.Thread.CpuBurst.CompareTo(y.Thread.CpuBurst);
         
         var timer = new System.Timers.Timer(_timeslice / 2);
         var timer1 = new System.Timers.Timer(_timeslice);
@@ -30,16 +34,6 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
         timer1.Start();
 
         _locker.WaitOne();
-        
-        timer.Stop();
-        timer1.Stop();
-
-        while (_sync > 0) { }
-        
-        timer.Elapsed -= OnTimedEvent;
-        timer1.Elapsed -= OnTimedEvent1;
-        timer.Dispose();
-        timer1.Dispose();
     }
     
     private void OnTimedEvent(object? source, ElapsedEventArgs e)
@@ -61,9 +55,29 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
     {
         Interlocked.Increment(ref _sync);
 
-        _threads.Sort();
+        _threads.Sort(_comparator);
+        foreach (var thread in _threads)
+            if (thread.Task.IsCompleted && thread.Thread.State == InQueue)
+                thread.Task.Start();
+
+        if (_threads.All(t => t.Task.IsCompleted && t.Thread.State == Completed))
+        {
+            timer.Stop();
+            timer1.Stop();
+
+            Interlocked.Decrement(ref _sync);
+
+            while (_sync > 0) { }
         
+            timer.Elapsed -= OnTimedEvent;
+            timer1.Elapsed -= OnTimedEvent1;
+            timer.Dispose();
+            timer1.Dispose();
         
+            _locker.Set();
+
+            return;
+        }
 
         Interlocked.Decrement(ref _sync);
     }
@@ -72,17 +86,23 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
     {
         _outputFile.Dispose();
         _locker.Dispose();
+        
+        foreach (var thread in _threads)
+            thread.Task.Dispose();
     }
 
     public async ValueTask DisposeAsync()
     {
         await _outputFile.DisposeAsync();
         _locker.Dispose();
+
+        foreach (var thread in _threads)
+            thread.Task.Dispose();
     }
 
     private readonly int _timeslice;
 
-    private readonly List<MyThread> _threads;
+    private readonly List<(MyThread thread, Task task)> _threads;
     
     private readonly StreamWriter _outputFile = new("../../../Output.txt", false);
     
@@ -94,5 +114,5 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
     
     private int _sync;
 
-    private Comparison<MyThread> _comparator;
+    private Comparison<(MyThread Thread, Task Task)> _comparator;
 }
