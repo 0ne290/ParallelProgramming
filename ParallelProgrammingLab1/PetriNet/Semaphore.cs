@@ -1,6 +1,6 @@
 namespace ParallelProgrammingLab1.PetriNet;
 
-public class Semaphore
+public class Semaphore : IDisposable
 {
     public Semaphore(string name, int capacity)
     {
@@ -63,6 +63,8 @@ public class Semaphore
             return true;
         }
     }
+    
+    public void Dispose() => _synchronizer.Dispose();
 
     private readonly string _name;
 

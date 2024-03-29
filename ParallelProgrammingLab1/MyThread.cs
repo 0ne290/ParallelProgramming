@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using ParallelProgrammingLab1.PetriNetSemaphore;
 using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
 
 namespace ParallelProgrammingLab1;
@@ -33,21 +32,34 @@ public class MyThread
 
     public void Execute(int timeslice, int timesliceNumber)
     {
+        State = ThreadState.Waiting;
+        _semaphores[_currentSemaphoreIndex].Hold(this);
         
-        
-        _currentSemaphoreIndex++;
+        State = ThreadState.Running;
+        _stopwatch.Restart();
+        while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
         
         State = ThreadState.InQueue;
+        _semaphores[_currentSemaphoreIndex].Release(this);
 
-        if (_currentSemaphoreIndex == _semaphores.Length)
-        {
-            _currentSemaphoreIndex = 0;
-            
-            _quantity--;
+        _cpuBurstCompleted += timesliceNumber;
 
-            if (_quantity < 1)
-                State = ThreadState.Completed;
-        }
+        if (_cpuBurstCompleted < CpuBurst)
+            return;
+        
+        _cpuBurstCompleted = 0;
+
+        _currentSemaphoreIndex++;
+
+        if (_currentSemaphoreIndex < _semaphores.Length)
+            return;
+        
+        _currentSemaphoreIndex = 0;
+
+        _quantity--;
+
+        if (_quantity < 1)
+            State = ThreadState.Completed;
     }
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
@@ -63,6 +75,8 @@ public class MyThread
     public static List<MyThread> Threads { get; } = new();
 
     private readonly Semaphore[] _semaphores;
+
+    private readonly Stopwatch _stopwatch = new();
 
     private int _quantity;
 
