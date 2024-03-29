@@ -1,4 +1,5 @@
 using System.Timers;
+using ParallelProgrammingLab1.PetriNet;
 
 namespace ParallelProgrammingLab1.PetriNetSemaphore;
 
@@ -62,7 +63,7 @@ public class Resource
         {
             foreach (var thread in MyThread.Threads)
             {
-                if (thread.State != ThreadStates.Completed)
+                if (thread.State != ThreadState.Completed)
                     break;
                 cond = false;
             }

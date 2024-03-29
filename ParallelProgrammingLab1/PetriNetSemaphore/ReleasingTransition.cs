@@ -1,3 +1,5 @@
+using ParallelProgrammingLab1.PetriNet;
+
 namespace ParallelProgrammingLab1.PetriNetSemaphore;
 
 public class ReleasingTransition

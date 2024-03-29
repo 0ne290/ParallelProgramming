@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using ParallelProgrammingLab1.PetriNetSemaphore;
+using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
 
 namespace ParallelProgrammingLab1;
 
 public class MyThread
 {
-    public MyThread(string name, int priority, int cpuBurst, int quantity, IEnumerable<Resource> resources)
+    public MyThread(string name, int priority, int cpuBurst, int quantity, IEnumerable<Semaphore> semaphores)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -16,67 +17,42 @@ public class MyThread
         if (Threads.Any(r => r.Name == name))
             throw new Exception($"Поток с именем {name} уже существует.");
 
+        foreach (var semaphore in semaphores)
+            semaphore.TryAddUser(this);
+
         Name = name;
         Priority = priority;
         CpuBurst = cpuBurst;
         _quantity = quantity;
-        _resources = resources.ToArray();
+        _semaphores = semaphores.ToArray();
 
         Threads.Add(this);
     }
 
     public override string ToString() => $"{Name} state = {State};";
 
-    public void Execute(bool preemptive)
+    public void Execute(int timeslice, int timesliceNumber)
     {
-        var cpuBurst = preemptive ? 1 : CpuBurst;
-        var waitTimeInMs = Resource.Timeslice * cpuBurst;
-        var currentResourceIndex = 0;
-        var currentResource = _resources[currentResourceIndex];
-        var stopwatch = new Stopwatch();
+        
+        
+        _currentSemaphoreIndex++;
+        
+        State = ThreadState.InQueue;
 
-        while (true)
+        if (_currentSemaphoreIndex == _semaphores.Length)
         {
-            State = ThreadStates.InQueue;
-            currentResource.Hold(this);
-            Locker.WaitOne();
-            State = ThreadStates.Running;
+            _currentSemaphoreIndex = 0;
+            
+            _quantity--;
 
-            stopwatch.Restart();
-            while (stopwatch.ElapsedMilliseconds < waitTimeInMs)
-            {
-            }
-
-            currentResource.Release(Name);
-
-            _cpuBurstCompleted += cpuBurst;
-            if (_cpuBurstCompleted < CpuBurst)
-            {
-                continue;
-            }
-
-            currentResourceIndex++;
-            if (currentResourceIndex == _resources.Length)
-            {
-                if (_quantity < 2)
-                {
-                    State = ThreadStates.Completed;
-                    Locker.Dispose();
-                    return;
-                }
-
-                _quantity--;
-                currentResourceIndex = 0;
-            }
-
-            currentResource = _resources[currentResourceIndex];
-            _cpuBurstCompleted = 0;
+            if (_quantity < 1)
+                State = ThreadState.Completed;
         }
     }
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
 
-    public ThreadStates State { get; private set; } = ThreadStates.InQueue;
+    public ThreadState State { get; private set; } = ThreadState.InQueue;
 
     public string Name { get; }
 
@@ -84,15 +60,15 @@ public class MyThread
 
     public int CpuBurst { get; }
 
-    public AutoResetEvent Locker { get; } = new(false);
-
     public static List<MyThread> Threads { get; } = new();
 
-    private readonly Resource[] _resources;
+    private readonly Semaphore[] _semaphores;
 
     private int _quantity;
 
     private int _cpuBurstCompleted;
+
+    private int _currentSemaphoreIndex;
 
     private static int _threadCounter = 1;
 }
