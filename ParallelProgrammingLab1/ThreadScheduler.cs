@@ -3,15 +3,13 @@ using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
 
 namespace ParallelProgrammingLab1;
 
-public class ThreadScheduler : IDisposable, IAsyncDisposable
+public class ThreadScheduler : IDisposable
 {
     public ThreadScheduler(int timeslice, bool preemptive)
     {
         _timeslice = timeslice;
         
-        _threads = new List<(MyThread thread, Task task)>();
-        foreach (var thread in MyThread.Threads)
-            _threads.Add((thread, new Task(() => thread.Execute(_timeslice, preemptive ? 1 : thread.CpuBurst))));
+        _threads = new List<MyThread>(MyThread.Threads);
         
         _preemptive = preemptive;
     }
@@ -21,17 +19,17 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
         _comparator = _preemptive
             ? (x, y) =>
             {
-                var ret = y.Thread.Priority.CompareTo(x.Thread.Priority);
-                return ret != 0 ? ret : x.Thread.GetRestOfCpuBurst().CompareTo(y.Thread.GetRestOfCpuBurst());
+                var ret = y.Priority.CompareTo(x.Priority);
+                return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
             }
-            : (x, y) => x.Thread.CpuBurst.CompareTo(y.Thread.CpuBurst);
+            : (x, y) => x.CpuBurst.CompareTo(y.CpuBurst);
         
-        var timer = new System.Timers.Timer(_timeslice / 2);
-        var timer1 = new System.Timers.Timer(_timeslice);
-        timer.Elapsed += OnTimedEvent;
-        timer1.Elapsed += OnTimedEvent1;
-        timer.Start();
-        timer1.Start();
+        _timer = new System.Timers.Timer(_timeslice / 2);
+        _timer1 = new System.Timers.Timer(_timeslice);
+        _timer.Elapsed += OnTimedEvent;
+        _timer1.Elapsed += OnTimedEvent1;
+        _timer.Start();
+        _timer1.Start();
 
         _locker.WaitOne();
     }
@@ -44,7 +42,7 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
 
         var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
 
-        _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
+        OutputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
 
         _quantumNumber++;
 
@@ -57,22 +55,26 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
 
         _threads.Sort(_comparator);
         foreach (var thread in _threads)
-            if (thread.Task.IsCompleted && thread.Thread.State == InQueue)
-                thread.Task.Start();
-
-        if (_threads.All(t => t.Task.IsCompleted && t.Thread.State == Completed))
         {
-            timer.Stop();
-            timer1.Stop();
+            if (thread.State == ThreadState.InQueue)
+            {
+                thread.Execute(_timeslice, _preemptive ? 1 : thread.CpuBurst);
+            }
+        }
+
+        if (_threads.All(t => t.State == ThreadState.Completed))
+        {
+            _timer.Stop();
+            _timer1.Stop();
 
             Interlocked.Decrement(ref _sync);
 
             while (_sync > 0) { }
         
-            timer.Elapsed -= OnTimedEvent;
-            timer1.Elapsed -= OnTimedEvent1;
-            timer.Dispose();
-            timer1.Dispose();
+            _timer.Elapsed -= OnTimedEvent;
+            _timer1.Elapsed -= OnTimedEvent1;
+            _timer.Dispose();
+            _timer1.Dispose();
         
             _locker.Set();
 
@@ -84,35 +86,26 @@ public class ThreadScheduler : IDisposable, IAsyncDisposable
     
     public void Dispose()
     {
-        _outputFile.Dispose();
         _locker.Dispose();
-        
-        foreach (var thread in _threads)
-            thread.Task.Dispose();
     }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _outputFile.DisposeAsync();
-        _locker.Dispose();
-
-        foreach (var thread in _threads)
-            thread.Task.Dispose();
-    }
+    
+    public StreamWriter OutputFile { get; set; }
 
     private readonly int _timeslice;
-
-    private readonly List<(MyThread thread, Task task)> _threads;
     
-    private readonly StreamWriter _outputFile = new("../../../Output.txt", false);
-    
-    private readonly AutoResetEvent _locker = new(true);
+    private readonly bool _preemptive;
 
-    public bool _preemptive;
+    private readonly List<MyThread> _threads;
+    
+    private readonly AutoResetEvent _locker = new(false);
     
     private int _quantumNumber;
     
     private int _sync;
 
-    private Comparison<(MyThread Thread, Task Task)> _comparator;
+    private Comparison<MyThread> _comparator;
+
+    private System.Timers.Timer _timer;
+    
+    private System.Timers.Timer _timer1;
 }

@@ -18,7 +18,7 @@
 			"Name": "P1",
 			"Priority": 1,
 			"CpuBurst": 3,
-			"Quantity": 4,
+			"Quantity": 2,
 			"ResourceNames": [
 				"R1",
 				"R2"
@@ -28,7 +28,7 @@
 			"Name": "P2",
 			"Priority": 2,
 			"CpuBurst": 1,
-			"Quantity": 3,
+			"Quantity": 2,
 			"ResourceNames": [
 				"R2",
 				"R1"
@@ -48,7 +48,7 @@
 			"Name": "P4",
 			"Priority": 1,
 			"CpuBurst": 3,
-			"Quantity": 5,
+			"Quantity": 2,
 			"ResourceNames": [
 				"R2",
 				"R1"

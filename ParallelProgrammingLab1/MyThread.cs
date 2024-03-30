@@ -9,7 +9,7 @@ public class MyThread
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            Name = $"T{_threadCounter}";
+            name = $"T{_threadCounter}";
             _threadCounter++;
         }
 
@@ -30,36 +30,48 @@ public class MyThread
 
     public override string ToString() => $"{Name} state = {State};";
 
+    public bool Terminated;
+
     public void Execute(int timeslice, int timesliceNumber)
     {
-        State = ThreadState.Waiting;
-        _semaphores[_currentSemaphoreIndex].Hold(this);
-        
-        State = ThreadState.Running;
-        _stopwatch.Restart();
-        while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
-        
-        State = ThreadState.InQueue;
-        _semaphores[_currentSemaphoreIndex].Release(this);
+        Task.Run(() =>
+        {
+            State = ThreadState.Waiting;
+            _semaphores[_currentSemaphoreIndex].Hold(this);
 
-        _cpuBurstCompleted += timesliceNumber;
+            State = ThreadState.Running;
+            _stopwatch.Restart();
+            while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
+            
+            _semaphores[_currentSemaphoreIndex].Release(this);
 
-        if (_cpuBurstCompleted < CpuBurst)
-            return;
-        
-        _cpuBurstCompleted = 0;
+            _cpuBurstCompleted += timesliceNumber;
 
-        _currentSemaphoreIndex++;
+            if (_cpuBurstCompleted < CpuBurst)
+            {
+                State = ThreadState.InQueue;
 
-        if (_currentSemaphoreIndex < _semaphores.Length)
-            return;
-        
-        _currentSemaphoreIndex = 0;
+                return;
+            }
 
-        _quantity--;
+            _cpuBurstCompleted = 0;
 
-        if (_quantity < 1)
-            State = ThreadState.Completed;
+            _currentSemaphoreIndex++;
+
+            if (_currentSemaphoreIndex < _semaphores.Length)
+            {
+                State = ThreadState.InQueue;
+                
+                return;
+            }
+
+            _currentSemaphoreIndex = 0;
+
+            _quantity--;
+
+            if (_quantity < 1)
+                State = ThreadState.Completed;
+        });
     }
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;

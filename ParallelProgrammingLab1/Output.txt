@@ -8,53 +8,112 @@ MaxP: 5
 	Название: R2; пропускная способность: 2
 
 Потоки:
-	Название: P1; приоритет: 1; время работы в квантах: 3; сколько раз выполнить: 4; названия требуемых ресурсов: R1, R2
-	Название: P2; приоритет: 2; время работы в квантах: 1; сколько раз выполнить: 3; названия требуемых ресурсов: R2, R1
+	Название: P1; приоритет: 1; время работы в квантах: 3; сколько раз выполнить: 2; названия требуемых ресурсов: R1, R2
+	Название: P2; приоритет: 2; время работы в квантах: 1; сколько раз выполнить: 2; названия требуемых ресурсов: R2, R1
 	Название: P3; приоритет: 3; время работы в квантах: 5; сколько раз выполнить: 2; названия требуемых ресурсов: R1, R2
-	Название: P4; приоритет: 1; время работы в квантах: 3; сколько раз выполнить: 5; названия требуемых ресурсов: R2, R1
+	Название: P4; приоритет: 1; время работы в квантах: 3; сколько раз выполнить: 2; названия требуемых ресурсов: R2, R1
 	Название: P5; приоритет: 2; время работы в квантах: 2; сколько раз выполнить: 2; названия требуемых ресурсов: R1, R2
 	Название: P6; приоритет: 3; время работы в квантах: 4; сколько раз выполнить: 1; названия требуемых ресурсов: R2, R1
 
 Поквантовый мониторинг состояния ресурсов и потоков:
-	0    | R1 = P3 P1;R2 = P2 P4;                                       | P1 state = Running;P2 state = Running;P3 state = Running;P4 state = Running;P5 state = InQueue;P6 state = InQueue;
-	1    | R1 = P3 P2;R2 = P4;                                          | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = Running;P5 state = InQueue;P6 state = InQueue;
-	2    | R1 = P3 P2;R2 = P4;                                          | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = Running;P5 state = InQueue;P6 state = InQueue;
-	3    | R1 = P3 P5;R2 = P6 P2;                                       | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	4    | R1 = P3 P5;R2 = P6 P2;                                       | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	5    | R1 = P3 P5;R2 = P2 P6;                                       | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	6    | R1 = P3 P2;R2 = P6 P5;                                       | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	7    | R1 = P1;R2 = P5 P6;                                          | P1 state = Running;P2 state = InQueue;P3 state = InQueue;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	8    | R1 = ;R2 = P6 P3;                                            | P1 state = InQueue;P2 state = InQueue;P3 state = Running;P4 state = InQueue;P5 state = InQueue;P6 state = Running;
-	9    | R1 = P6 P1;R2 = P3 P2;                                       | P1 state = Running;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = InQueue;P6 state = Running;
-	10   | R1 = P6;R2 = P2 P3;                                          | P1 state = InQueue;P2 state = Running;P3 state = Running;P4 state = InQueue;P5 state = InQueue;P6 state = Running;
-	11   | R1 = P2;R2 = P5;                                             | P1 state = InQueue;P2 state = Running;P3 state = InQueue;P4 state = InQueue;P5 state = Running;P6 state = InQueue;
-	12   | R1 = P6 P5;R2 = P3 P4;                                       | P1 state = InQueue;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Running;P6 state = Running;
-	13   | R1 = P6 P5;R2 = P3 P1;                                       | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = InQueue;P5 state = Running;P6 state = Running;
-	14   | R1 = P3 P4;R2 = P5 P1;                                       | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Running;P6 state = Completed;
-	15   | R1 = P3 P4;R2 = P5 P1;                                       | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Running;P6 state = Completed;
-	16   | R1 = P3 P4;R2 = ;                                            | P1 state = InQueue;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	17   | R1 = P3 P4;R2 = ;                                            | P1 state = InQueue;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	18   | R1 = P3 P1;R2 = P4;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	19   | R1 = P3 P1;R2 = P4;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	20   | R1 = P1;R2 = P3 P4;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	21   | R1 = P4;R2 = P3 P1;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	22   | R1 = P4;R2 = P3 P1;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	23   | R1 = P4;R2 = P3 P1;                                          | P1 state = Running;P2 state = Completed;P3 state = InQueue;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	24   | R1 = P1;R2 = P3 P4;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	25   | R1 = P1;R2 = P3 P4;                                          | P1 state = Running;P2 state = Completed;P3 state = Running;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	26   | R1 = P1;R2 = P4;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = InQueue;P5 state = Completed;P6 state = Completed;
-	27   | R1 = P1;R2 = P4;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	28   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	29   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	30   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	31   | R1 = ;R2 = P1 P4;                                            | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	32   | R1 = P1;R2 = P4;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	33   | R1 = P1;R2 = P4;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	34   | R1 = P1;R2 = P4;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	35   | R1 = P1 P4;R2 = ;                                            | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	36   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	37   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	38   | R1 = P4;R2 = P1;                                             | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-	39   | R1 = ;R2 = P1 P4;                                            | P1 state = Running;P2 state = Completed;P3 state = Completed;P4 state = Running;P5 state = Completed;P6 state = Completed;
-
-Общее время работы системы: 20789 мс.
+	0    | R1 = ;R2 = ;                                                 | P1 state = InQueue;P2 state = InQueue;P3 state = InQueue;P4 state = InQueue;P5 state = InQueue;P6 state = InQueue;
+	1    | R1 = ;R2 = ;                                                 | P1 state = InQueue;P2 state = InQueue;P3 state = InQueue;P4 state = InQueue;P5 state = InQueue;P6 state = InQueue;
+	2    | R1 = P3 P5;R2 = P4 P2;                                       | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Running;P6 state = InQueue;
+	3    | R1 = P5;R2 = P4 P2;                                          | P1 state = Waiting;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = Running;P6 state = InQueue;
+	4    | R1 = P1 P1;R2 = P2 P6;                                       | P1 state = Running;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = InQueue;P6 state = Running;
+	5    | R1 = P1 P1 P3 P5;R2 = P2 P6 P4;                              | P1 state = Running;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	6    | R1 = P1 P3 P5;R2 = P2 P4;                                    | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	7    | R1 = P1 P3 P5 P1;R2 = P2 P6;                                 | P1 state = Running;P2 state = Waiting;P3 state = Running;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	8    | R1 = P1 P5 P1;R2 = P2 P6;                                    | P1 state = Running;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	9    | R1 = P5 P1 P3;R2 = P2 P4;                                    | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	10   | R1 = P5 P1 P3;R2 = P2 P4;                                    | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	11   | R1 = P5 P1 P1;R2 = P2 P6;                                    | P1 state = Running;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	12   | R1 = P5 P1 P1;R2 = P2 P6;                                    | P1 state = Running;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	13   | R1 = P5 P1 P4 P3;R2 = P2 P6;                                 | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	14   | R1 = P5 P1 P4 P3;R2 = P2;                                    | P1 state = InQueue;P2 state = Waiting;P3 state = Running;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	15   | R1 = P5 P1 P3;R2 = P2 P1;                                    | P1 state = Running;P2 state = Waiting;P3 state = Running;P4 state = InQueue;P5 state = Waiting;P6 state = Waiting;
+	16   | R1 = P5 P1 P6;R2 = P2 P1;                                    | P1 state = Running;P2 state = Waiting;P3 state = InQueue;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	17   | R1 = P5 P1 P6 P4 P3;R2 = P2;                                 | P1 state = InQueue;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	18   | R1 = P5 P1 P4 P3;R2 = P2;                                    | P1 state = InQueue;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	19   | R1 = P5 P1 P3 P6;R2 = P2 P1;                                 | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	20   | R1 = P5 P1 P3 P6;R2 = P2 P1;                                 | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = InQueue;P5 state = Waiting;P6 state = Running;
+	21   | R1 = P5 P1 P3 P4;R2 = P2 P1;                                 | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	22   | R1 = P5 P1 P3 P4;R2 = P2 P1;                                 | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	23   | R1 = P5 P1 P3 P6;R2 = P2;                                    | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	24   | R1 = P5 P1 P3 P6;R2 = P2;                                    | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	25   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	26   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = InQueue;
+	27   | R1 = P5 P1 P3 P6;R2 = P2;                                    | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	28   | R1 = P5 P1 P3 P6;R2 = P2;                                    | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Running;
+	29   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	30   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	31   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	32   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	33   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	34   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	35   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	36   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	37   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	38   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	39   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	40   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	41   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	42   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	43   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	44   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	45   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	46   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	47   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	48   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	49   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	50   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	51   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	52   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	53   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	54   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	55   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	56   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	57   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	58   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	59   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	60   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	61   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	62   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	63   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	64   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	65   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	66   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	67   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	68   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	69   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	70   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	71   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	72   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	73   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	74   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	75   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	76   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	77   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	78   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	79   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	80   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	81   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	82   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	83   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	84   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	85   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	86   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	87   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	88   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	89   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	90   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	91   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	92   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	93   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	94   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	95   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	96   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	97   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	98   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	99   | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state = Waiting;P3 state = Waiting;P4 state = Running;P5 state = Waiting;P6 state = Completed;
+	100  | R1 = P5 P1 P3;R2 = P2;                                       | P1 state = Running;P2 state 

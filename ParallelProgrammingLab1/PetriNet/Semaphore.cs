@@ -22,10 +22,14 @@ public class Semaphore : IDisposable
 
     public void Hold(MyThread thread)
     {
+        lock (_locker1)
+        {
+            while (!_holdingTransitions[thread].IsAvailable()) { }
+        }
+        
         lock (_locker)
         {
-            if (!_holdingTransitions[thread].IsAvailable())
-                _synchronizer.WaitOne();
+            Console.WriteLine("YYYYYYYYYYYY");
             
             _namesOfHoldingThreads.Add(thread.Name);
             
@@ -37,11 +41,11 @@ public class Semaphore : IDisposable
     {
         lock (_locker)
         {
+            Console.WriteLine("XXXXXXXXXXXX");
+            
             _namesOfHoldingThreads.Remove(thread.Name);
             
             _releasingTransitions[thread].Execute();
-            
-            _synchronizer.Set();
         }
     }
     
@@ -63,6 +67,8 @@ public class Semaphore : IDisposable
             return true;
         }
     }
+
+    public static Semaphore GetByName(string name) => Semaphores.Find(s => s._name == name) ?? throw new Exception($"Ресурса с именем \"{name}\" нет.");
     
     public void Dispose() => _synchronizer.Dispose();
 
@@ -76,7 +82,9 @@ public class Semaphore : IDisposable
     
     private readonly object _locker = new();
     
-    private readonly AutoResetEvent _synchronizer = new(true);
+    private readonly object _locker1 = new();
+    
+    private readonly AutoResetEvent _synchronizer = new(false);
     
     private readonly List<string> _namesOfHoldingThreads = new();
     
