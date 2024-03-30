@@ -8,6 +8,21 @@ public class Transition
         _outputPlaces = outputPlaces;
     }
 
+    public override string ToString()
+    {
+        var res = "Output Places:";
+
+        foreach (var outputPlace in _outputPlaces)
+            res += " " + outputPlace;
+
+        res += "; Input Places:";
+        
+        foreach (var inputPlace in _inputPlaces)
+            res += " " + inputPlace;
+
+        return res;
+    }
+
     public void Execute()
     {
         foreach (var place in _inputPlaces)

@@ -26,29 +26,27 @@ public class MyThread
         _semaphores = semaphores.ToArray();
 
         Threads.Add(this);
-    }
-
-    public override string ToString() => $"{Name} state = {State};";
-
-    public bool Terminated;
-
-    public void Execute(int timeslice, int timesliceNumber)
-    {
-        Task.Run(() =>
+        
+        vb = obj =>
         {
-            State = ThreadState.Waiting;
+            var timeslice = ((int[])obj)[0];
+            var timesliceNumber = ((int[])obj)[1];
+            
             _semaphores[_currentSemaphoreIndex].Hold(this);
 
             State = ThreadState.Running;
             _stopwatch.Restart();
-            while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
-            
+            while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber)
+            {
+            }
+
             _semaphores[_currentSemaphoreIndex].Release(this);
 
             _cpuBurstCompleted += timesliceNumber;
 
             if (_cpuBurstCompleted < CpuBurst)
             {
+                //Console.WriteLine($"{Name} InQueue After Increment CpuBurstCompleted");
                 State = ThreadState.InQueue;
 
                 return;
@@ -60,8 +58,9 @@ public class MyThread
 
             if (_currentSemaphoreIndex < _semaphores.Length)
             {
+                //Console.WriteLine($"{Name} InQueue After Increment CurrentSemaphoreIndex");
                 State = ThreadState.InQueue;
-                
+
                 return;
             }
 
@@ -70,8 +69,27 @@ public class MyThread
             _quantity--;
 
             if (_quantity < 1)
+            {
+                //Console.WriteLine($"{Name} Completed");
                 State = ThreadState.Completed;
-        });
+            }
+            else
+            {
+                //Console.WriteLine($"{Name} InQueue After Decrement Quantity");
+                State = ThreadState.InQueue;
+            }
+        };
+    }
+
+    public override string ToString() => $"{Name} state = {State};";
+
+    private ParameterizedThreadStart vb;
+    
+    public void Execute(int timeslice, int timesliceNumber)
+    {
+        State = ThreadState.Waiting;
+        var thread = new Thread(vb);
+        thread.Start(new[] { timeslice, timesliceNumber });
     }
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;

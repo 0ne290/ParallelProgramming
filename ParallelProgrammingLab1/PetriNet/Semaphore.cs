@@ -18,18 +18,26 @@ public class Semaphore : IDisposable
         Semaphores.Add(this);
     }
     
+    //public override string ToString()
+    //{
+    //    var res = "Semaphore " + _name + Environment.NewLine;
+//
+    //    foreach (var holdingTransition in _holdingTransitions)
+    //        res += "Holding Transition For Thread " + holdingTransition.Key.State + " " + holdingTransition.Key.Name + ": " + holdingTransition.Value + Environment.NewLine;
+    //    
+    //    foreach (var releasingTransition in _releasingTransitions)
+    //        res += "Releasing Transition For Thread " + releasingTransition.Key.State + " " + releasingTransition.Key.Name + ": " + releasingTransition.Value + Environment.NewLine;
+//
+    //    return res;
+    //}
+    
     public override string ToString() => $"{_name} = {string.Join(" ", _namesOfHoldingThreads)};";
 
     public void Hold(MyThread thread)
     {
-        lock (_locker1)
-        {
-            while (!_holdingTransitions[thread].IsAvailable()) { }
-        }
-        
         lock (_locker)
         {
-            Console.WriteLine("YYYYYYYYYYYY");
+            while (!_holdingTransitions[thread].IsAvailable()) { }
             
             _namesOfHoldingThreads.Add(thread.Name);
             
@@ -39,10 +47,8 @@ public class Semaphore : IDisposable
 
     public void Release(MyThread thread)
     {
-        lock (_locker)
+        lock (_locker1)
         {
-            Console.WriteLine("XXXXXXXXXXXX");
-            
             _namesOfHoldingThreads.Remove(thread.Name);
             
             _releasingTransitions[thread].Execute();
@@ -72,7 +78,7 @@ public class Semaphore : IDisposable
     
     public void Dispose() => _synchronizer.Dispose();
 
-    private readonly string _name;
+    public readonly string _name;
 
     private readonly Place _semaphorePlace;
     

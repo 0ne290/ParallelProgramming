@@ -10,6 +10,8 @@ public class Place
         _tokens = tokens;
     }
 
+    public override string ToString() => _tokens.ToString();
+
     public void Load() => Interlocked.Increment(ref _tokens);
     
     public void Unload()

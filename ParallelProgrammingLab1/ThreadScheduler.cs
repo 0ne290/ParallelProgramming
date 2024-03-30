@@ -46,6 +46,11 @@ public class ThreadScheduler : IDisposable
 
         _quantumNumber++;
 
+        //foreach (var semaphore in Semaphore.Semaphores)
+        //{
+        //    Console.WriteLine("\n" + semaphore + "\n");
+        //}
+
         Interlocked.Decrement(ref _sync);
     }
     
