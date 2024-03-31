@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Newtonsoft.Json;
+using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
 
 namespace ParallelProgrammingLab1;
 
@@ -37,16 +38,45 @@ internal static class Program
                 if (res.Capacity < 1)
                     res.Capacity = random.Next(1, inputData.Threads.Count / 2 + 1);
                     
-                _ = new PetriNet.Semaphore(res.Name, res.Capacity);
+                _ = new Semaphore(res.Name, res.Capacity);
                 outputFile.WriteLine($"\tНазвание: {res.Name}; пропускная способность: {res.Capacity}");
             }
 
             outputFile.WriteLine("\nПотоки:");
             foreach (var thread in inputData.Threads)
             {
-                var resources = new List<ParallelProgrammingLab1.PetriNet.Semaphore>();
+                var resources = new List<Semaphore>();
+                if (thread.ResourceNames.Count > 0)
+                {
+                    foreach (var resName in thread.ResourceNames)
+                        resources.Add(string.IsNullOrWhiteSpace(resName)
+                            ? Semaphore.Semaphores[random.Next(0, Semaphore.Semaphores.Count)]
+                            : Semaphore.GetByName(resName));
+                }
+                else
+                {
+                    
+                }
+
+                if (thread.Priority < 1)
+                    thread.Priority = random.Next(1, inputData.MaxP + 1);
+                if (thread.CpuBurst < 1)
+                    thread.CpuBurst = random.Next(1, inputData.MaxT + 1);
+                if (thread.Quantity < 1)
+                    thread.Quantity = random.Next(1, 6);
+
+                _ = new MyThread(thread.Name, thread.Priority, thread.CpuBurst, thread.Quantity, resources);
+                outputFile.WriteLine(
+                    $"\tНазвание: {thread.Name}; приоритет: {thread.Priority}; время работы в квантах: {thread.CpuBurst}; сколько раз выполнить: {thread.Quantity}; названия требуемых ресурсов: {string.Join(", ", thread.ResourceNames)}");
+            }
+
+            for (var i = 0; i < inputData.Np - inputData.Threads.Count; i++)
+            {
+                var resources = new List<Semaphore>();
                 foreach (var resName in thread.ResourceNames)
-                    resources.Add(PetriNet.Semaphore.GetByName(resName));
+                    resources.Add(string.IsNullOrWhiteSpace(resName)
+                        ? Semaphore.Semaphores[random.Next(0, Semaphore.Semaphores.Count)]
+                        : Semaphore.GetByName(resName));
 
                 if (thread.Priority < 1)
                     thread.Priority = random.Next(1, inputData.MaxP + 1);

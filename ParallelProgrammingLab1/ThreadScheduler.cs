@@ -1,5 +1,6 @@
 using System.Timers;
 using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
+using Timer = System.Timers.Timer;
 
 namespace ParallelProgrammingLab1;
 
@@ -15,8 +16,8 @@ public class ThreadScheduler : IDisposable
 
         _outputFile = outputFile;
         
-        _timer = new System.Timers.Timer(_timeslice / 2.0);
-        _timer1 = new System.Timers.Timer(_timeslice);
+        _timer = new Timer(_timeslice / 2.0);
+        _timer1 = new Timer(_timeslice);
         _timer.Elapsed += OnTimedEvent;
         _timer1.Elapsed += OnTimedEvent1;
         
@@ -98,9 +99,9 @@ public class ThreadScheduler : IDisposable
     
     private readonly Comparison<MyThread> _comparator;
     
-    private readonly System.Timers.Timer _timer;
+    private readonly Timer _timer;
     
-    private readonly System.Timers.Timer _timer1;
+    private readonly Timer _timer1;
     
     private readonly StreamWriter _outputFile;
     

@@ -10,6 +10,10 @@ public class InputData
     
     public int MaxP { get; set; }
     
+    public int Nr { get; set; }
+    
+    public int Np { get; set; }
+    
     public List<ResourceConfiguration> Resources { get; set; }
     
     public List<MyThreadConfiguration> Threads { get; set; }
