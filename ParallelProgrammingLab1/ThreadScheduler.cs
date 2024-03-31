@@ -5,29 +5,32 @@ namespace ParallelProgrammingLab1;
 
 public class ThreadScheduler : IDisposable
 {
-    public ThreadScheduler(int timeslice, bool preemptive)
+    public ThreadScheduler(int timeslice, bool preemptive, StreamWriter outputFile)
     {
         _timeslice = timeslice;
         
         _threads = new List<MyThread>(MyThread.Threads);
         
         _preemptive = preemptive;
+
+        _outputFile = outputFile;
+        
+        _timer = new System.Timers.Timer(_timeslice / 2.0);
+        _timer1 = new System.Timers.Timer(_timeslice);
+        _timer.Elapsed += OnTimedEvent;
+        _timer1.Elapsed += OnTimedEvent1;
+        
+        _comparator = _preemptive
+                    ? (x, y) =>
+                    {
+                        var ret = y.Priority.CompareTo(x.Priority);
+                        return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
+                    }
+                    : (x, y) => x.CpuBurst.CompareTo(y.CpuBurst);
     }
     
     public void Execute()
     {
-        _comparator = _preemptive
-            ? (x, y) =>
-            {
-                var ret = y.Priority.CompareTo(x.Priority);
-                return ret != 0 ? ret : x.GetRestOfCpuBurst().CompareTo(y.GetRestOfCpuBurst());
-            }
-            : (x, y) => x.CpuBurst.CompareTo(y.CpuBurst);
-        
-        _timer = new System.Timers.Timer(_timeslice / 2);
-        _timer1 = new System.Timers.Timer(_timeslice);
-        _timer.Elapsed += OnTimedEvent;
-        _timer1.Elapsed += OnTimedEvent1;
         _timer.Start();
         _timer1.Start();
 
@@ -42,14 +45,9 @@ public class ThreadScheduler : IDisposable
 
         var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
 
-        OutputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
+        _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
 
         _quantumNumber++;
-
-        //foreach (var semaphore in Semaphore.Semaphores)
-        //{
-        //    Console.WriteLine("\n" + semaphore + "\n");
-        //}
 
         Interlocked.Decrement(ref _sync);
     }
@@ -60,12 +58,8 @@ public class ThreadScheduler : IDisposable
 
         _threads.Sort(_comparator);
         foreach (var thread in _threads)
-        {
             if (thread.State == ThreadState.InQueue)
-            {
                 thread.Execute(_timeslice, _preemptive ? 1 : thread.CpuBurst);
-            }
-        }
 
         if (_threads.All(t => t.State == ThreadState.Completed))
         {
@@ -75,12 +69,7 @@ public class ThreadScheduler : IDisposable
             Interlocked.Decrement(ref _sync);
 
             while (_sync > 0) { }
-        
-            _timer.Elapsed -= OnTimedEvent;
-            _timer1.Elapsed -= OnTimedEvent1;
-            _timer.Dispose();
-            _timer1.Dispose();
-        
+            
             _locker.Set();
 
             return;
@@ -92,25 +81,32 @@ public class ThreadScheduler : IDisposable
     public void Dispose()
     {
         _locker.Dispose();
+        
+        _outputFile.Dispose();
+        
+        _timer.Elapsed -= OnTimedEvent;
+        _timer1.Elapsed -= OnTimedEvent1;
+        _timer.Dispose();
+        _timer1.Dispose();
     }
     
-    public StreamWriter OutputFile { get; set; }
-
     private readonly int _timeslice;
     
     private readonly bool _preemptive;
 
     private readonly List<MyThread> _threads;
     
+    private readonly Comparison<MyThread> _comparator;
+    
+    private readonly System.Timers.Timer _timer;
+    
+    private readonly System.Timers.Timer _timer1;
+    
+    private readonly StreamWriter _outputFile;
+    
     private readonly AutoResetEvent _locker = new(false);
     
     private int _quantumNumber;
     
     private int _sync;
-
-    private Comparison<MyThread> _comparator;
-
-    private System.Timers.Timer _timer;
-    
-    private System.Timers.Timer _timer1;
 }

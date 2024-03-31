@@ -1,6 +1,6 @@
 namespace ParallelProgrammingLab1.PetriNet;
 
-public class Semaphore : IDisposable
+public class Semaphore
 {
     public Semaphore(string name, int capacity)
     {
@@ -75,10 +75,8 @@ public class Semaphore : IDisposable
     }
 
     public static Semaphore GetByName(string name) => Semaphores.Find(s => s._name == name) ?? throw new Exception($"Ресурса с именем \"{name}\" нет.");
-    
-    public void Dispose() => _synchronizer.Dispose();
 
-    public readonly string _name;
+    private readonly string _name;
 
     private readonly Place _semaphorePlace;
     
@@ -89,8 +87,6 @@ public class Semaphore : IDisposable
     private readonly object _locker = new();
     
     private readonly object _locker1 = new();
-    
-    private readonly AutoResetEvent _synchronizer = new(false);
     
     private readonly List<string> _namesOfHoldingThreads = new();
     

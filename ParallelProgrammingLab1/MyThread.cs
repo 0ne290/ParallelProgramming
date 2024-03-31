@@ -15,30 +15,26 @@ public class MyThread
 
         if (Threads.Any(r => r.Name == name))
             throw new Exception($"Поток с именем {name} уже существует.");
-
-        foreach (var semaphore in semaphores)
-            semaphore.TryAddUser(this);
-
+        
         Name = name;
         Priority = priority;
         CpuBurst = cpuBurst;
         _quantity = quantity;
         _semaphores = semaphores.ToArray();
 
-        Threads.Add(this);
+        foreach (var semaphore in _semaphores)
+            semaphore.TryAddUser(this);
         
-        vb = obj =>
+        _threadAction = obj =>
         {
-            var timeslice = ((int[])obj)[0];
+            var timeslice = ((int[])obj!)[0];
             var timesliceNumber = ((int[])obj)[1];
             
             _semaphores[_currentSemaphoreIndex].Hold(this);
 
             State = ThreadState.Running;
             _stopwatch.Restart();
-            while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber)
-            {
-            }
+            while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
 
             _semaphores[_currentSemaphoreIndex].Release(this);
 
@@ -46,7 +42,6 @@ public class MyThread
 
             if (_cpuBurstCompleted < CpuBurst)
             {
-                //Console.WriteLine($"{Name} InQueue After Increment CpuBurstCompleted");
                 State = ThreadState.InQueue;
 
                 return;
@@ -58,7 +53,6 @@ public class MyThread
 
             if (_currentSemaphoreIndex < _semaphores.Length)
             {
-                //Console.WriteLine($"{Name} InQueue After Increment CurrentSemaphoreIndex");
                 State = ThreadState.InQueue;
 
                 return;
@@ -68,27 +62,18 @@ public class MyThread
 
             _quantity--;
 
-            if (_quantity < 1)
-            {
-                //Console.WriteLine($"{Name} Completed");
-                State = ThreadState.Completed;
-            }
-            else
-            {
-                //Console.WriteLine($"{Name} InQueue After Decrement Quantity");
-                State = ThreadState.InQueue;
-            }
+            State = _quantity < 1 ? ThreadState.Completed : ThreadState.InQueue;
         };
+        
+        Threads.Add(this);
     }
 
     public override string ToString() => $"{Name} state = {State};";
-
-    private ParameterizedThreadStart vb;
     
     public void Execute(int timeslice, int timesliceNumber)
     {
         State = ThreadState.Waiting;
-        var thread = new Thread(vb);
+        var thread = new Thread(_threadAction);
         thread.Start(new[] { timeslice, timesliceNumber });
     }
 
@@ -104,10 +89,14 @@ public class MyThread
 
     public static List<MyThread> Threads { get; } = new();
 
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
     private readonly Semaphore[] _semaphores;
+    
+    private readonly ParameterizedThreadStart _threadAction;
 
     private readonly Stopwatch _stopwatch = new();
 
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
     private int _quantity;
 
     private int _cpuBurstCompleted;

@@ -60,8 +60,7 @@ internal static class Program
                     $"\tНазвание: {thread.Name}; приоритет: {thread.Priority}; время работы в квантах: {thread.CpuBurst}; сколько раз выполнить: {thread.Quantity}; названия требуемых ресурсов: {string.Join(", ", thread.ResourceNames)}");
             }
 
-            var threadScheduler = new ThreadScheduler(inputData.Qt, inputData.Pa);
-            threadScheduler.OutputFile = outputFile;
+            var threadScheduler = new ThreadScheduler(inputData.Qt, inputData.Pa, outputFile);
 
             outputFile.WriteLine("\nПоквантовый мониторинг состояния ресурсов и потоков:");
 
@@ -71,10 +70,7 @@ internal static class Program
             threadScheduler.Execute();
             outputFile.WriteLine($"\nОбщее время работы системы: {stopwatch.ElapsedMilliseconds} мс.");
 
-            outputFile.Dispose();
-
-            foreach (var semaphore in PetriNet.Semaphore.Semaphores)
-                semaphore.Dispose();
+            threadScheduler.Dispose();
             
             Console.Write("Нажмите любую клавишу для завершения программы...");
             Console.ReadKey();
