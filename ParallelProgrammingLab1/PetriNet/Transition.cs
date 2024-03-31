@@ -4,8 +4,8 @@ public class Transition
 {
     public Transition(IEnumerable<Place> inputPlaces, IEnumerable<Place> outputPlaces)
     {
-        _inputPlaces = inputPlaces;
-        _outputPlaces = outputPlaces;
+        _inputPlaces = inputPlaces.ToArray();
+        _outputPlaces = outputPlaces.ToArray();
     }
 
     public override string ToString()
@@ -41,7 +41,7 @@ public class Transition
         return true;
     }
     
-    private readonly IEnumerable<Place> _inputPlaces;
+    private readonly Place[] _inputPlaces;
     
-    private readonly IEnumerable<Place> _outputPlaces;
+    private readonly Place[] _outputPlaces;
 }
