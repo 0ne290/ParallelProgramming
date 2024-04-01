@@ -18,6 +18,8 @@ public class ThreadScheduler : IDisposable
         
         _timer = new Timer(_timeslice / 2.0);
         _timer1 = new Timer(_timeslice);
+        _timer.AutoReset = false;
+        _timer1.AutoReset = false;
         _timer.Elapsed += OnTimedEvent;
         _timer1.Elapsed += OnTimedEvent1;
         
@@ -47,8 +49,8 @@ public class ThreadScheduler : IDisposable
         var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
 
         _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
-
-        _quantumNumber++;
+        
+        _timer.Start();
 
         Interlocked.Decrement(ref _sync);
     }
@@ -56,25 +58,35 @@ public class ThreadScheduler : IDisposable
     private void OnTimedEvent1(object? source, ElapsedEventArgs e)
     {
         Interlocked.Increment(ref _sync);
-
+        
         _threads.Sort(_comparator);
         foreach (var thread in _threads)
             if (thread.State == ThreadState.InQueue)
                 thread.Execute(_timeslice, _preemptive ? 1 : thread.CpuBurst);
+        
+        _quantumNumber++;
 
         if (_threads.All(t => t.State == ThreadState.Completed))
         {
             _timer.Stop();
-            _timer1.Stop();
-
+            
             Interlocked.Decrement(ref _sync);
 
-            while (_sync > 0) { }
+            while (_sync > 0)
+                Thread.Yield();
+            
+            var semaphores = Semaphore.Semaphores.Aggregate("", (current, resourse) => current + resourse);
+
+            var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
+
+            _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
             
             _locker.Set();
 
             return;
         }
+        
+        _timer1.Start();
 
         Interlocked.Decrement(ref _sync);
     }

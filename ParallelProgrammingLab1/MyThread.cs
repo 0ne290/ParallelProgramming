@@ -79,6 +79,8 @@ public class MyThread
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
 
+    public IEnumerable<string> GetSemaphoreNames() => _semaphores.Select(s => s.Name);
+
     public ThreadState State { get; private set; } = ThreadState.InQueue;
 
     public string Name { get; }

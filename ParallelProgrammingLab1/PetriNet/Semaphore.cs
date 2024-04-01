@@ -10,10 +10,10 @@ public class Semaphore
             _semaphoreCounter++;
         }
         
-        if (Semaphores.Any(r => r._name == name))
+        if (Semaphores.Any(r => r.Name == name))
             throw new Exception($"Семафор с именем {name} уже существует.");
         
-        _name = name;
+        Name = name;
         _semaphorePlace = new Place(capacity);
         Semaphores.Add(this);
     }
@@ -31,13 +31,14 @@ public class Semaphore
     //    return res;
     //}
     
-    public override string ToString() => $"{_name} = {string.Join(" ", _namesOfHoldingThreads)};";
+    public override string ToString() => $"{Name} = {string.Join(" ", _namesOfHoldingThreads)};";
 
     public void Hold(MyThread thread)
     {
         lock (_locker)
         {
-            while (!_holdingTransitions[thread].IsAvailable()) { }
+            while (!_holdingTransitions[thread].IsAvailable())
+                Thread.Yield();
             
             _namesOfHoldingThreads.Add(thread.Name);
             
@@ -74,9 +75,9 @@ public class Semaphore
         }
     }
 
-    public static Semaphore GetByName(string name) => Semaphores.Find(s => s._name == name) ?? throw new Exception($"Ресурса с именем \"{name}\" нет.");
+    public static Semaphore GetByName(string name) => Semaphores.Find(s => s.Name == name) ?? throw new Exception($"Ресурса с именем \"{name}\" нет.");
 
-    private readonly string _name;
+    public string Name { get; }
 
     private readonly Place _semaphorePlace;
     
