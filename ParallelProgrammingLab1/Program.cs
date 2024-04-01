@@ -47,12 +47,16 @@ internal static class Program
                 throw new Exception(
                     "Невозможно прочитать данные из файла конфигурации. Вероятно, данные не соответствуют формату.");
 
+            if (inputData.Np < inputData.Threads.Count)
+                inputData.Np = inputData.Threads.Count;
+            if (inputData.Nr < inputData.Resources.Count)
+                inputData.Nr = inputData.Resources.Count;
             if (inputData.Qt < 1)
                 inputData.Qt = random.Next(1, 1001);
             if (inputData.MaxT < 1)
                 inputData.MaxT = random.Next(1, 11);
             if (inputData.MaxP < 1)
-                inputData.MaxP = random.Next(1, inputData.Threads.Count + 1);
+                inputData.MaxP = random.Next(1, inputData.Np + 1);
 
             var pa = inputData.Pa ? "SJF, preemptive, absolute priority" : "SJF, nonpreemptive";
             outputFile.WriteLine($"Pa: {pa}");
@@ -66,7 +70,7 @@ internal static class Program
             foreach (var serializedResource in inputData.Resources)
             {
                 if (serializedResource.Capacity < 1)
-                    serializedResource.Capacity = random.Next(1, inputData.Threads.Count / 2 + 1);
+                    serializedResource.Capacity = random.Next(1, inputData.Np / 2 + 1);
                     
                 var resource = new Semaphore(serializedResource.Name, serializedResource.Capacity);
                 outputFile.WriteLine($"\tНазвание: {resource.Name}; пропускная способность: {serializedResource.Capacity}");
@@ -74,7 +78,7 @@ internal static class Program
             
             for (var i = 0; i < inputData.Nr - inputData.Resources.Count; i++)
             {
-                var capacity = random.Next(1, inputData.Threads.Count / 2 + 1);
+                var capacity = random.Next(1, inputData.Np / 2 + 1);
                 var resource = new Semaphore("", capacity);
                 outputFile.WriteLine($"\tНазвание: {resource.Name}; пропускная способность: {capacity}");
             }
