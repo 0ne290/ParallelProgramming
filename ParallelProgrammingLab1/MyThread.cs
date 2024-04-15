@@ -68,7 +68,7 @@ public class MyThread
         Threads.Add(this);
     }
 
-    public override string ToString() => $"{Name} state = {State};";
+    public override string ToString() => $"{State} {_semaphores[_currentSemaphoreIndex].Name};";
     
     public void Execute(int timeslice, int timesliceNumber)
     {

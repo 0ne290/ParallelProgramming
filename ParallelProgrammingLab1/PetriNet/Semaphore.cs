@@ -31,7 +31,7 @@ public class Semaphore
     //    return res;
     //}
     
-    public override string ToString() => $"{Name} = {string.Join(" ", _namesOfHoldingThreads)};";
+    public override string ToString() => $"{string.Join(" ", _namesOfHoldingThreads)};";
 
     public void Hold(MyThread thread)
     {

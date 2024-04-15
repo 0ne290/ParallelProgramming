@@ -44,9 +44,9 @@ public class ThreadScheduler : IDisposable
     {
         Interlocked.Increment(ref _sync);
 
-        var semaphores = Semaphore.Semaphores.Aggregate("", (current, resourse) => current + resourse);
+        var semaphores = Semaphore.Semaphores.Aggregate("", (current, resourse) => current + " " + resourse);
 
-        var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
+        var threads = MyThread.Threads.Aggregate("", (current, thread) => current + " " + thread);
 
         _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
         
@@ -75,9 +75,9 @@ public class ThreadScheduler : IDisposable
             while (_sync > 0)
                 Thread.Yield();
             
-            var semaphores = Semaphore.Semaphores.Aggregate("", (current, resourse) => current + resourse);
+            var semaphores = Semaphore.Semaphores.Aggregate("", (current, resourse) => current + " " + resourse);
 
-            var threads = MyThread.Threads.Aggregate("", (current, thread) => current + thread);
+            var threads = MyThread.Threads.Aggregate("", (current, thread) => current + " " + thread);
 
             _outputFile.WriteLine($"\t{_quantumNumber, -4} | {semaphores, -60} | {threads}");
             
