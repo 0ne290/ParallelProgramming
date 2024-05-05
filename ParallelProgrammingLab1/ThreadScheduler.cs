@@ -59,6 +59,17 @@ public class ThreadScheduler : IDisposable
     {
         Interlocked.Increment(ref _sync);
         
+        foreach (var thread in _threads)
+        {
+            if (thread.State != ThreadState.InQueue && thread.State != ThreadState.Completed)
+            {
+                thread.Reseter.Set();
+                while (thread.State != ThreadState.InQueue && thread.State != ThreadState.Completed)
+                {
+                }
+            }
+        }
+        
         _threads.Sort(_comparator);
         foreach (var thread in _threads)
             if (thread.State == ThreadState.InQueue)
@@ -96,6 +107,9 @@ public class ThreadScheduler : IDisposable
         _locker.Dispose();
         
         _outputFile.Dispose();
+
+        foreach (var thread in _threads)
+            thread.Reseter.Dispose();
         
         _timer.Elapsed -= OnTimedEvent;
         _timer1.Elapsed -= OnTimedEvent1;
