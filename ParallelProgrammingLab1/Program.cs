@@ -1,154 +1,126 @@
 ﻿using System.Diagnostics;
-using ParallelProgrammingLab1.Enums;
+using Newtonsoft.Json;
+using Semaphore = ParallelProgrammingLab1.PetriNet.Semaphore;
 
 namespace ParallelProgrammingLab1;
 
 internal static class Program
 {
-    private static void Main()
+    private static int Main()
     {
-        Console.WriteLine
-        ("Ввод данных в программу осуществляется через консоль. Результаты работы программы будут асинхронно " +
-         "выводиться в файл \"Output.txt\". Формат входных данных:\nНомер алгоритма планирования - [0;1], 0 - " +
-         "SjfNonpreemptive, 1 - SjfPreemptiveAbsolutePriority;\nЕсли для детали ввести время обработки 0, то будет " +
-         "сгенерировано случайное значение;\nДля всех остальных численных переменных значение должно быть больше " +
-         "нуля;\nОграничений на значения текстовых переменных названий нет;\nРазделителем между названиями станков " +
-         "для деталей является строка \", \".\n");
-        
-        // PA
-        PlanningAlgorithms planningAlgorithm;
-        while (true)
+        try
         {
-            Console.Write("Введите номер алгоритма планирования: ");
-            if (!Enum.TryParse(Console.ReadLine() ?? string.Empty, out planningAlgorithm))
-                continue;
-            if (Enum.IsDefined(planningAlgorithm))
-                break;
-        }
-        
-        // QT
-        var timeSlice = 0;
-        while (timeSlice < 1)
-        {
-            Console.Write("Введите продолжительность кванта времени в миллисекундах: ");
-            timeSlice = Convert.ToInt32(Console.ReadLine());
-        }
-        
-        // MaxT
-        var maxCpuBurst = 0;
-        while (maxCpuBurst < 1)
-        {
-            Console.Write("Введите максимальное время работы потоков в квантах для автоматической " +
-                          "случайной генерации: ");
-            maxCpuBurst = Convert.ToInt32(Console.ReadLine());
-        }
-        
-        //// MaxP
-        //var maxPriority = 0;
-        //while (maxPriority < 1)
-        //{
-        //    Console.Write("Введите максимальный приоритет потоков для автоматической случайной генерации: ");
-        //    maxPriority = Convert.ToInt32(Console.ReadLine());
-        //}
-        
-        // NR
-        var amountResources = 0;
-        while (amountResources < 1)
-        {
-            Console.Write("Введите кол-во ресурсов: ");
-            amountResources = Convert.ToInt32(Console.ReadLine());
-        }
-
-        // Ресурсы
-        var machineNamesUsed = new List<string?> { null, string.Empty };
-        for (var i = 1; i <= amountResources; i++)
-        {
-            var name = string.Empty;// Название
-            while (machineNamesUsed.Contains(name))
-            {
-                Console.Write($"Станок {i}. Введите название: ");
-                name = Console.ReadLine()?.Trim();
-            }
-            machineNamesUsed.Add(name);
+            var outputFile = new StreamWriter("../../../Output.txt", false);
             
-            var capacity = 0;// Кол-во потоков одновременного доступа
-            while (capacity < 1)
-            {
-                Console.Write($"Станок {i}. Введите кол-во одновременно обрабатываемых деталей: ");
-                capacity = Convert.ToInt32(Console.ReadLine());
-            }
+            var threadScheduler = ParseInputData("../../../Input.json", outputFile);
+
+            outputFile.WriteLine("\nПоквантовый мониторинг состояния ресурсов и потоков:");
+
+            var stopwatch = new Stopwatch();
+
+            stopwatch.Start();
+            threadScheduler.Execute();
+            outputFile.WriteLine($"\nОбщее время работы системы: {stopwatch.ElapsedMilliseconds} мс.");
+
+            threadScheduler.Dispose();
             
-            Machine.CreateMachine(name!, capacity);
+            Console.Write("Нажмите любую клавишу для завершения программы...");
+            Console.ReadKey();
+
+            return 0;
         }
-        machineNamesUsed.RemoveRange(0, 2);
-        
-        // NP
-        var amountThreads = 0;
-        while (amountThreads < 1)
+        catch (Exception e)
         {
-            Console.Write("Введите кол-во деталей: ");
-            amountThreads = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine(e.Message);
+            Console.Write("\nНажмите любую клавишу для завершения программы...");
+            Console.ReadKey();
+            return 1;
         }
-        
-        // Потоки
-        var detailNamesUsed = new List<string?> { null, string.Empty };
-        var emptyStringArray = new[] { string.Empty };
-        for (var i = 1; i <= amountThreads; i++)
-        {
-            var name = string.Empty;// Название
-            while (detailNamesUsed.Contains(name))
-            {
-                Console.Write($"Деталь {i}. Введите название: ");
-                name = Console.ReadLine()?.Trim();
-            }
-            detailNamesUsed.Add(name);
-            
-            var quantity = 0;// Кол-во потоков
-            while (quantity < 1)
-            {
-                Console.Write($"Деталь {i}. Введите кол-во: ");
-                quantity = Convert.ToInt32(Console.ReadLine());
-            }
-            
-            var machineNames = emptyStringArray;// Названия ресурсов
-            while (!machineNames.All(machineName => machineNamesUsed.Contains(machineName)))
-            {
-                Console.Write($"Деталь {i}. Введите названия станков: ");
-                machineNames = Console.ReadLine()?.Split(", ").Distinct().ToArray() ?? emptyStringArray;
-            }
-
-            Console.Write($"Деталь {i}. Введите время обработки в квантах: ");
-            var cpuBurst = Convert.ToInt32(Console.ReadLine()); // Время обработки
-            if (cpuBurst < 1)
-            {
-                var random = new Random();
-                cpuBurst = random.Next(1, maxCpuBurst + 1);
-            }
-
-            Detail.CreateDetail(machineNames, quantity, timeSlice, cpuBurst, name!);
-        }
-        
-        Console.WriteLine();
-
-        DisplayEntities();
-
-        var workshop = new Workshop(timeSlice);
-        
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-        workshop.StartProduction(planningAlgorithm);
-        Console.Write(
-            $"\nВсе детали обработаны. Затраченное время - {stopwatch.ElapsedMilliseconds} мс.\n\nНажмите любую " +
-            $"клавишу для завершения программы... ");
-        Console.ReadKey();
     }
 
-    private static void DisplayEntities()
+    private static ThreadScheduler ParseInputData(string pathToInputFile, StreamWriter outputFile)
     {
-        foreach (var machine in Machine.Machines)
-            Console.WriteLine(machine);
+        var inputData = JsonConvert.DeserializeObject<InputData>(File.ReadAllText(pathToInputFile));
+            var random = new Random();
 
-        foreach (var detail in Detail.Details)
-           Console.WriteLine(detail);
+            if (inputData == null)
+                throw new Exception(
+                    "Невозможно прочитать данные из файла конфигурации. Вероятно, данные не соответствуют формату.");
+
+            if (inputData.Np < inputData.Threads.Count)
+                inputData.Np = inputData.Threads.Count;
+            if (inputData.Nr < inputData.Resources.Count)
+                inputData.Nr = inputData.Resources.Count;
+            if (inputData.Qt < 1)
+                inputData.Qt = random.Next(1, 1001);
+            if (inputData.MaxT < 1)
+                inputData.MaxT = random.Next(1, 11);
+            if (inputData.MaxP < 1)
+                inputData.MaxP = random.Next(1, inputData.Np + 1);
+
+            var pa = inputData.Pa ? "SJF, preemptive, absolute priority" : "SJF, nonpreemptive";
+            outputFile.WriteLine($"Pa: {pa}");
+            outputFile.WriteLine($"Qt: {inputData.Qt}");
+            outputFile.WriteLine($"MaxT: {inputData.MaxT}");
+            outputFile.WriteLine($"MaxP: {inputData.MaxP}");
+            outputFile.WriteLine($"Nr: {inputData.Nr}");
+            outputFile.WriteLine($"Np: {inputData.Np}");
+
+            outputFile.WriteLine("\nРесурсы:");
+            foreach (var serializedResource in inputData.Resources)
+            {
+                if (serializedResource.Capacity < 1)
+                    serializedResource.Capacity = random.Next(1, inputData.Np / 2 + 1);
+                    
+                var resource = new Semaphore(serializedResource.Name, serializedResource.Capacity);
+                outputFile.WriteLine($"\tНазвание: {resource.Name}; пропускная способность: {serializedResource.Capacity}");
+            }
+            
+            for (var i = 0; i < inputData.Nr - inputData.Resources.Count; i++)
+            {
+                var capacity = random.Next(1, inputData.Np / 2 + 1);
+                var resource = new Semaphore("", capacity);
+                outputFile.WriteLine($"\tНазвание: {resource.Name}; пропускная способность: {capacity}");
+            }
+
+            outputFile.WriteLine("\nПотоки:");
+            foreach (var serializedThread in inputData.Threads)
+            {
+                var resources = new List<Semaphore>();
+                if (serializedThread.ResourceNames.Count > 0)
+                    foreach (var resName in serializedThread.ResourceNames)
+                        resources.Add(string.IsNullOrWhiteSpace(resName)
+                            ? Semaphore.Semaphores[random.Next(0, Semaphore.Semaphores.Count)]
+                            : Semaphore.GetByName(resName));
+                else
+                    for (var j = 0; j < random.Next(0, Semaphore.Semaphores.Count) + 1; j++)
+                        resources.Add(Semaphore.Semaphores[random.Next(0, Semaphore.Semaphores.Count)]);
+
+                if (serializedThread.Priority < 1)
+                    serializedThread.Priority = random.Next(1, inputData.MaxP + 1);
+                if (serializedThread.CpuBurst < 1)
+                    serializedThread.CpuBurst = random.Next(1, inputData.MaxT + 1);
+                if (serializedThread.Quantity < 1)
+                    serializedThread.Quantity = random.Next(1, 6);
+
+                var thread = new MyThread(serializedThread.Name, serializedThread.Priority, serializedThread.CpuBurst, serializedThread.Quantity, resources);
+                outputFile.WriteLine(
+                    $"\tНазвание: {thread.Name}; приоритет: {thread.Priority}; время работы в квантах: {thread.CpuBurst}; сколько раз выполнить: {serializedThread.Quantity}; названия требуемых ресурсов: {string.Join(", ", thread.GetSemaphoreNames())}");
+            }
+
+            for (var i = 0; i < inputData.Np - inputData.Threads.Count; i++)
+            {
+                var resources = new List<Semaphore>();
+                for (var j = 0; j < random.Next(0, Semaphore.Semaphores.Count) + 1; j++)
+                    resources.Add(Semaphore.Semaphores[random.Next(0, Semaphore.Semaphores.Count)]);
+
+                var quantity = random.Next(1, 6);
+
+                var thread = new MyThread("", random.Next(1, inputData.MaxP + 1), random.Next(1, inputData.MaxT + 1), quantity, resources);
+                outputFile.WriteLine(
+                    $"\tНазвание: {thread.Name}; приоритет: {thread.Priority}; время работы в квантах: {thread.CpuBurst}; сколько раз выполнить: {quantity}; названия требуемых ресурсов: {string.Join(", ", thread.GetSemaphoreNames())}");
+            }
+
+            return new ThreadScheduler(inputData.Qt, inputData.Pa, outputFile);
     }
 }
