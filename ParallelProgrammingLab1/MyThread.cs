@@ -33,9 +33,13 @@ public class MyThread
             _semaphores[_currentSemaphoreIndex].Hold(this);
 
             State = ThreadState.Running;
-            //_stopwatch.Restart();
-            //while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
-            Reseter.WaitOne();
+            if (timesliceNumber == 1)
+                Reseter.WaitOne();
+            else
+            {
+                _stopwatch.Restart();
+                while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
+            }
 
             _semaphores[_currentSemaphoreIndex].Release(this);
 
@@ -69,7 +73,7 @@ public class MyThread
         Threads.Add(this);
     }
 
-    public AutoResetEvent Reseter { get; } = new AutoResetEvent(false);
+    public AutoResetEvent Reseter { get; } = new(false);
 
     public override string ToString() => $"{State} {_semaphores[_currentSemaphoreIndex].Name};";
     

@@ -1,4 +1,4 @@
-Pa: SJF, preemptive, absolute priority
+Pa: SJF, nonpreemptive
 Qt: 300
 MaxT: 10
 MaxP: 5
@@ -23,23 +23,42 @@ Np: 6
 	1    |  Thread5; Thread2;                                           |  Waiting R1; Running R2; Waiting R1; Waiting R2; Running R1; Waiting R2;
 	2    |  Thread5; Thread2;                                           |  Waiting R1; Running R2; Waiting R1; Waiting R2; Running R1; Waiting R2;
 	2    |  Thread5; Thread2;                                           |  Waiting R1; Running R2; Waiting R1; Waiting R2; Running R1; Waiting R2;
-	2    |  ; ;                                                         |  Waiting R1; Completed R2; InQueue R1; InQueue R2; Completed R1; InQueue R2;
 	3    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
 	3    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
-	4    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
-	4    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
-	5    |  Thread3; Thread1;                                           |  Running R2; Completed R2; Running R1; Waiting R1; Completed R1; Waiting R1;
-	5    |  Thread3; Thread1;                                           |  Running R2; Completed R2; Running R1; Waiting R1; Completed R1; Waiting R1;
-	6    |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
-	6    |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
-	7    |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
-	7    |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
-	8    |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
-	8    |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
-	9    |  Thread1; Thread3;                                           |  Running R1; Completed R2; Running R2; Completed R2; Completed R1; Completed R2;
-	9    |  Thread1; Thread3;                                           |  Running R1; Completed R2; Running R2; Completed R2; Completed R1; Completed R2;
-	10   |  ; Thread3;                                                  |  Completed R1; Completed R2; Running R2; Completed R2; Completed R1; Completed R2;
-	10   |  ; Thread3;                                                  |  Completed R1; Completed R2; Running R2; Completed R2; Completed R1; Completed R2;
-	11   |  ; ;                                                         |  Completed R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	4    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
+	4    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
+	5    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
+	5    |  Thread1; Thread4;                                           |  Running R1; Completed R2; Waiting R1; Running R2; Completed R1; Waiting R2;
+	6    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	6    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	7    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	7    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	8    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	8    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	9    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	9    |  Thread3; Thread6;                                           |  Waiting R2; Completed R2; Running R1; Waiting R1; Completed R1; Running R2;
+	10   |  Thread3; Thread1;                                           |  Running R2; Completed R2; Running R1; Waiting R1; Completed R1; Waiting R1;
+	10   |  Thread3; Thread1;                                           |  Running R2; Completed R2; Running R1; Waiting R1; Completed R1; Waiting R1;
+	11   |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
+	11   |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
+	12   |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
+	12   |  Thread4; Thread1;                                           |  Running R2; Completed R2; Waiting R2; Running R1; Completed R1; Waiting R1;
+	13   |  Thread4; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Running R1; Completed R1; Waiting R1;
+	13   |  Thread4; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Running R1; Completed R1; Waiting R1;
+	14   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	14   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	15   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	15   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	16   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	16   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	17   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	17   |  Thread6; Thread3;                                           |  Waiting R1; Completed R2; Running R2; Completed R2; Completed R1; Running R1;
+	18   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	18   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	19   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	19   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	20   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	20   |  Thread1; ;                                                  |  Running R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
+	21   |  ; ;                                                         |  Completed R1; Completed R2; Completed R1; Completed R2; Completed R1; Completed R2;
 
-Общее время работы системы: 3356 мс.
+Общее время работы системы: 6342 мс.
