@@ -59,13 +59,21 @@ public class ThreadScheduler : IDisposable
     {
         Interlocked.Increment(ref _sync);
         
-        foreach (var thread in _threads)
-            if (thread.State == ThreadState.Running)
-                thread.Reseter.Set();
+        if (_preemptive)
+        {
+            foreach (var thread in _threads)
+            {
+                if (thread.State == ThreadState.Running)
+                    thread.Reseter.Set();
+                while (thread.State == ThreadState.Running)
+                {
+                }
+            }
+        }
         
         _threads.Sort(_comparator);
         foreach (var thread in _threads)
-            if (thread.State == ThreadState.InQueue)
+            if (thread.State == ThreadState.InQueue && thread.IsAvailable())
                 thread.Execute(_timeslice, _preemptive ? 1 : thread.CpuBurst);
         
         _quantumNumber++;

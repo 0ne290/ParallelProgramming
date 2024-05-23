@@ -29,8 +29,6 @@ public class MyThread
         {
             var timeslice = ((int[])obj!)[0];
             var timesliceNumber = ((int[])obj)[1];
-            
-            _semaphores[_currentSemaphoreIndex].Hold(this);
 
             State = ThreadState.Running;
             if (timesliceNumber == 1)
@@ -40,10 +38,10 @@ public class MyThread
                 _stopwatch.Restart();
                 while (_stopwatch.ElapsedMilliseconds < timeslice * timesliceNumber) { }
             }
-
-            _semaphores[_currentSemaphoreIndex].Release(this);
-
+            
             _cpuBurstCompleted += timesliceNumber;
+            
+            _semaphores[_currentSemaphoreIndex].Release(this);
 
             if (_cpuBurstCompleted < CpuBurst)
             {
@@ -79,10 +77,12 @@ public class MyThread
     
     public void Execute(int timeslice, int timesliceNumber)
     {
-        State = ThreadState.Waiting;
         var thread = new Thread(_threadAction);
+        _semaphores[_currentSemaphoreIndex].Hold(this);
         thread.Start(new[] { timeslice, timesliceNumber });
     }
+
+    public bool IsAvailable() => _semaphores[_currentSemaphoreIndex].IsAvailable(this);
 
     public int GetRestOfCpuBurst() => CpuBurst - _cpuBurstCompleted;
 

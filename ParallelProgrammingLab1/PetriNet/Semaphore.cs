@@ -33,6 +33,14 @@ public class Semaphore
     
     public override string ToString() => $"{string.Join(" ", _namesOfHoldingThreads)};";
 
+    public bool IsAvailable(MyThread thread)
+    {
+        lock (_locker)
+        {
+            return _holdingTransitions[thread].IsAvailable();
+        }
+    }
+
     public void Hold(MyThread thread)
     {
         lock (_locker)

@@ -1,5 +1,5 @@
 {
-	"Pa": false,
+	"Pa": true,
 	"Qt": 300,
 	"MaxT": 10,
 	"MaxP": 5,
@@ -38,7 +38,7 @@
 		},
 		{
 			"Name": "Thread3",
-			"Priority": 1,
+			"Priority": 2,
 			"CpuBurst": 5,
 			"Quantity": 1,
 			"ResourceNames": [
